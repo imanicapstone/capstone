@@ -13,3 +13,88 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                Int                   @id @default(cuid())
+  email             String                @unique
+  password          String
+  
+  profile           UserProfile?          @relation(fields: [id], references: [userId])
+  sensitiveData     UserSensitiveData?    @relation(fields: [id], references: [userId])
+  financialRecords  FinancialData[]       @relation("UserFinancialRecords")      
+  transactions      Transaction[]         @relation("UserTransactions")
+}
+
+model UserProfile {
+  id        String    @id @default(cuid(id))
+  userId    String    @unique
+  user      User      @relation(fields: [userId, references: [id]])
+
+  ageRange  String?
+  gender    String?
+  occupation  String?
+}
+
+model UserSensitiveData {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId, references: [id]])
+
+  salary    Float
+}
+
+model FinancialData {
+  id          String  @id @default(cuid())
+  userId      String
+  user        User    @relation("UserFinancialRecords", fields: [userId], references: [id])
+
+  category    String
+  amount      Float
+  date        DateTime
+}
+
+model Transaction {
+  id              String    @id @default(cuid())
+  userId          String    
+  user            User      @relation(fields: [userId], references: [id])
+
+  amount          Float
+  type            TransactionType
+  category        String
+  description     String?
+  date            DateTime
+
+  merchant        String?
+  location        String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Notification {
+  id          String  @id @default(cuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+
+  title       String
+  message     String
+  type        NotificationType
+  status      NotificationStatus
+
+  createdAt   DateTime  @default(now())
+  readAt      DateTime? // null if unread
+  expiresAt   DateTime? 
+
+}
+
+enum NotificationType {
+  ALERT 
+  REMINDER 
+  INSIGHT
+  GENERAL 
+}
+
+  enum NotificationStatus {
+    UNREAD 
+    READ 
+  }
