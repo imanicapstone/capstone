@@ -15,20 +15,21 @@ datasource db {
 }
 
 model User {
-  id                Int                   @id @default(cuid())
+  id                String                @id @default(cuid())
   email             String                @unique
   password          String
   
-  profile           UserProfile?          @relation(fields: [id], references: [userId])
-  sensitiveData     UserSensitiveData?    @relation(fields: [id], references: [userId])
-  financialRecords  FinancialData[]       @relation("UserFinancialRecords")      
+  profile           UserProfile?          @relation("UserProfile")
+  sensitiveData     UserSensitiveData?    @relation("UserSensitiveData")
+  financialRecords  FinancialData[]       @relation("FinancialData")      
   transactions      Transaction[]         @relation("UserTransactions")
+  notifications     Notification[]        @relation("Notification")
 }
 
 model UserProfile {
-  id        String    @id @default(cuid(id))
+  id        String    @id @default(cuid())
   userId    String    @unique
-  user      User      @relation(fields: [userId, references: [id]])
+  user      User      @relation("UserProfile", fields: [userId], references: [id])
 
   ageRange  String?
   gender    String?
@@ -38,7 +39,7 @@ model UserProfile {
 model UserSensitiveData {
   id        String    @id @default(cuid())
   userId    String    @unique
-  user      User      @relation(fields: [userId, references: [id]])
+  user      User      @relation("UserSensitiveData", fields: [userId], references: [id])
 
   salary    Float
 }
@@ -46,7 +47,7 @@ model UserSensitiveData {
 model FinancialData {
   id          String  @id @default(cuid())
   userId      String
-  user        User    @relation("UserFinancialRecords", fields: [userId], references: [id])
+  user        User    @relation("FinancialData", fields: [userId], references: [id])
 
   category    String
   amount      Float
@@ -56,7 +57,7 @@ model FinancialData {
 model Transaction {
   id              String    @id @default(cuid())
   userId          String    
-  user            User      @relation(fields: [userId], references: [id])
+  user            User      @relation("Transaction", fields: [userId], references: [id])
 
   amount          Float
   type            TransactionType
@@ -74,7 +75,7 @@ model Transaction {
 model Notification {
   id          String  @id @default(cuid())
   userId      String
-  user        User    @relation(fields: [userId], references: [id])
+  user        User    @relation("Notification", fields: [userId], references: [id])
 
   title       String
   message     String
@@ -94,7 +95,12 @@ enum NotificationType {
   GENERAL 
 }
 
-  enum NotificationStatus {
-    UNREAD 
-    READ 
-  }
+enum NotificationStatus {
+  UNREAD 
+  READ 
+}
+
+enum TransactionType {
+    INCOME 
+    EXPENSE
+}
