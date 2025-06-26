@@ -16,6 +16,7 @@ datasource db {
 
 model User {
   id                String                @id @default(cuid())
+  id                String                @id @default(cuid())
   email             String                @unique
   password          String
   salary            Float
@@ -31,7 +32,7 @@ model User {
 model Transaction {
   id              String    @id @default(cuid())
   userId          String    
-  user            User      @relation(fields: [userId], references: [id])
+  user            User      @relation("Transaction", fields: [userId], references: [id])
 
   amount          Float
   category        String

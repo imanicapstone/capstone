@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
+const PORT = 3000;
 const cors = require('cors')
+const userRouter = require('./routes/user')
 
 //middleware
 app.use(express.json())
@@ -19,3 +21,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Fina is running on port ${PORT}`);
 });
+
