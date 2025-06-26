@@ -2,9 +2,10 @@ const express = require("express");
 const user = express.Router();
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
+const bcrypt = require("bcrypt");
 // create a user
 user.post("/", async (req, res) => {
-  const { id, email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     const newUser = await prisma.user.create({
@@ -32,11 +33,9 @@ user.post("/", async (req, res) => {
     });
 
 
-    return newUser;
+    res.json(newUser);
   } catch (error) {
-    res
-      .status(400)
-      .json({ error: "Failed to create user", details: error.message });
+    res.status(400).send("Failed to create user");
     throw error;
   }
 });
@@ -46,14 +45,14 @@ user.get("/:id", async (req, res) => {
 
   try {
     const currentUser = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
     });
 
-    if (!user) {
+    if (!currentUser) {
       return res.status(404).json({ error: "User not found " });
     }
 
-    res.json(user);
+    res.json(currentUser);
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
@@ -63,11 +62,11 @@ user.get("/:id", async (req, res) => {
 
 user.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { id, email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
     });
 
     if (!existingUser) {
@@ -75,7 +74,7 @@ user.put("/:id", async (req, res) => {
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: {
         id,
         email,
@@ -170,7 +169,7 @@ user.get("/financial-data", async (req, res) => {
     if (!userFinancialData) {
       return res.status(404).json({ error: "Financial Data not found " });
     }
-    res.json(category, amount, date);
+    res.json({category, amount, date});
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
@@ -244,7 +243,7 @@ user.get("/transaction", async (req, res) => {
     if (!userTransaction) {
       return res.status(404).json({ error: "Transaction not found " });
     }
-    res.json(amount, type, category, description, date);
+    res.json({amount, type, category, description, date});
   } catch (error) {
     res.status(404).send("ID is not valid");
   }

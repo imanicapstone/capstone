@@ -14,8 +14,10 @@ app.use(cors())
 app.use('/user', userRouter)
 
 // main route
-
 app.get('/', (req, res) => {
     res.send('Backend of Fina!')
 });
 
+app.listen(PORT, () => {
+  console.log(`Fina is running on port ${PORT}`);
+});
