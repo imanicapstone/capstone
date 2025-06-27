@@ -18,7 +18,6 @@ const Login = () => {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            console.log('Login successful! Would navigate to /dashboard');
         }   catch (error) {
             console.error(error);
             setError(error.message || 'Login failed');
@@ -29,7 +28,6 @@ const Login = () => {
         try {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
-            console.log('Google login successful! Would navigate to /dashboard');
         }   catch(error) {
             console.error(error);
             setError('Google login failed');
