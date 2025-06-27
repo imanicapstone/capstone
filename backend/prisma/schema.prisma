@@ -16,43 +16,18 @@ datasource db {
 
 model User {
   id                String                @id @default(cuid())
+  id                String                @id @default(cuid())
   email             String                @unique
   password          String
-  
-  profile           UserProfile?          @relation("UserProfile")
-  sensitiveData     UserSensitiveData?    @relation("UserSensitiveData")
-  financialRecords  FinancialData[]       @relation("FinancialData")      
-  transactions      Transaction[]         @relation("UserTransactions")
-  notifications     Notification[]        @relation("Notification")
+  salary            Float
+  ageRange          String?
+  gender            String?
+  occupation        String?
+          
+  transactions      Transaction[]      
 }
 
-model UserProfile {
-  id        String    @id @default(cuid())
-  userId    String    @unique
-  user      User      @relation("UserProfile", fields: [userId], references: [id])
 
-  ageRange  String?
-  gender    String?
-  occupation  String?
-}
-
-model UserSensitiveData {
-  id        String    @id @default(cuid())
-  userId    String    @unique
-  user      User      @relation("UserSensitiveData", fields: [userId], references: [id])
-
-  salary    Float
-}
-
-model FinancialData {
-  id          String  @id @default(cuid())
-  userId      String
-  user        User    @relation("FinancialData", fields: [userId], references: [id])
-
-  category    String
-  amount      Float
-  date        DateTime
-}
 
 model Transaction {
   id              String    @id @default(cuid())
@@ -60,47 +35,7 @@ model Transaction {
   user            User      @relation("Transaction", fields: [userId], references: [id])
 
   amount          Float
-  type            TransactionType
   category        String
-  description     String?
   date            DateTime
 
-  merchant        String?
-  location        String?
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model Notification {
-  id          String  @id @default(cuid())
-  userId      String
-  user        User    @relation("Notification", fields: [userId], references: [id])
-
-  title       String
-  message     String
-  type        NotificationType
-  status      NotificationStatus
-
-  createdAt   DateTime  @default(now())
-  readAt      DateTime? // null if unread
-  expiresAt   DateTime? 
-
-}
-
-enum NotificationType {
-  ALERT 
-  REMINDER 
-  INSIGHT
-  GENERAL 
-}
-
-enum NotificationStatus {
-  UNREAD 
-  READ 
-}
-
-enum TransactionType {
-    INCOME 
-    EXPENSE
 }

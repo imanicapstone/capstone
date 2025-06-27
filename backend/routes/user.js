@@ -6,12 +6,13 @@ const bcrypt = require("bcrypt");
 // create a user
 user.post("/", async (req, res) => {
   const { email, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
     const newUser = await prisma.user.create({
       data: {
         email,
-        password,
+        password: hashedPassword,
         // profile data
         profile: {
           create: {
@@ -94,14 +95,14 @@ user.put("/:id", async (req, res) => {
 // add or update user salary
 
 user.patch("/salary", async (req, res) => {
-  const { userId, salary } = req.body;
+  const { id, salary } = req.body;
 
   try {
-    const updatedSalary = await prisma.userSensitiveData.upsert({
-      where: { userId },
+    const updatedSalary = await prisma.user.upsert({
+      where: { id },
       update: { salary },
       create: {
-        userId,
+        id,
         salary,
       },
     });
@@ -117,91 +118,19 @@ user.patch("/salary", async (req, res) => {
 // route to get a user's salary
 
 user.get("/salary", async (req, res) => {
-  const { userId, salary } = req.body;
+  const { id, salary } = req.body;
 
   try {
-    const userSalary = await prisma.userSensitiveData.findUnique({
+    const userSalary = await prisma.user.findUnique({
       where: { id: parseInt(id) },
     });
-    if (!userSensitiveData) {
+    if (!user) {
       return res.status(404).json({ error: "Salary not found " });
     }
     res.json(salary);
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
-});
-
-// route to create financial data
-
-user.post("/financial-data", async (req, res) => {
-  const { userId, category, amount, date } = req.body;
-  if ((!userId || !category, amount == null || !date)) {
-    return res.status(400).json({ error: "Missing required fields!" });
-  }
-
-  try {
-    const newFinancialData = await prisma.FinancialData.create({
-      data: {
-        userId,
-        category,
-        amount: parseFloat(amount),
-        date: new Date(date),
-      },
-    });
-
-    res.status(201).json(newFinancialData);
-  } catch (error) {
-    res.status(500).json({ error: "Internal error" });
-  }
-});
-
-// route to get financial data
-
-user.get("/financial-data", async (req, res) => {
-  const { id } = req.params;
-  const { userId, category, amount, date } = req.body;
-
-  try {
-    const userFinancialData = await prisma.FinancialData.findUnique({
-      where: { id: parseInt(id) },
-    });
-    if (!userFinancialData) {
-      return res.status(404).json({ error: "Financial Data not found " });
-    }
-    res.json({category, amount, date});
-  } catch (error) {
-    res.status(404).send("ID is not valid");
-  }
-});
-
-// updated financial data
-
-user.put("/financial-data/:id", async (req, res) => {
-  const { id } = req.params;
-  const { userId, category, amount, date } = req.body;
-
-  if ((!userId || !category, amount == null || !date)) {
-    return res.status(400).json({ error: "Missing required fields!" });
-  }
-
-  try {
-    const updatedFinancialData = await prisma.financialData.update({
-      where: { id },
-      data: {
-        userId,
-        category,
-        amount: parseFloat(amount),
-        date: new Date(date),
-      },
-    });
-
-    res.status(200).json(updatedFinancialData);
-  } catch (error) {
-    return res.status(404).json({ error: "Financial data not found" });
-  }
-
-  res.status(500).json({ error: "Internal server error" });
 });
 
 // route to create a transaction
@@ -234,7 +163,7 @@ user.post("/transaction", async (req, res) => {
 
 user.get("/transaction", async (req, res) => {
   const { id } = req.params;
-  const { userId, amount, type, category, description, date } = req.body;
+  const { userId, amount, category, date } = req.body;
 
   try {
     const userTransaction = await prisma.Transaction.findUnique({
@@ -243,7 +172,7 @@ user.get("/transaction", async (req, res) => {
     if (!userTransaction) {
       return res.status(404).json({ error: "Transaction not found " });
     }
-    res.json({amount, type, category, description, date});
+    res.json({amount, category, date});
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
@@ -253,7 +182,7 @@ user.get("/transaction", async (req, res) => {
 
 user.put("/transaction/:id", async (req, res) => {
   const { id } = req.params;
-  const { userId, amount, type, category, description, date } = req.body;
+  const { userId, amount, category, date } = req.body;
   if ((!userId || amount == null, !category, !type, !description || !date)) {
     return res.status(400).json({ error: "Missing required fields!" });
   }
@@ -264,9 +193,7 @@ user.put("/transaction/:id", async (req, res) => {
       data: {
         userId,
         amount: parseFloat(amount),
-        type,
         category,
-        description,
         date: new Date(date),
       },
     });
@@ -301,3 +228,19 @@ user.delete("/transaction/:id", async (req, res) => {
 });
 
 export default user;
+
+user.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if(!user) {
+        return res.status(401).json({ error: 'Invalid email'});
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if(!validPassword) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+    }
+})
