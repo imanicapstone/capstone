@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from react-router-dom; 
 import {
     signInWithEmailAndPassword,
     signInWithPopup,
@@ -9,7 +8,6 @@ import { auth } from '../firebase';
 import './Login.css'
 
 const Login = () => {
-    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -20,10 +18,10 @@ const Login = () => {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            navigate('/dashboard'); 
+            console.log('Login successful! Would navigate to /dashboard');
         }   catch (error) {
-            console.error(err);
-            setError(err.message || 'Login failed');
+            console.error(error);
+            setError(error.message || 'Login failed');
         }
     };
 
@@ -31,7 +29,7 @@ const Login = () => {
         try {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
-            navigate('/dashboard');
+            console.log('Google login successful! Would navigate to /dashboard');
         }   catch(error) {
             console.error(error);
             setError('Google login failed');
@@ -72,4 +70,3 @@ const Login = () => {
 };
 
 export default Login;
-
