@@ -1,17 +1,15 @@
-import { Routes, Route } from "react-router-dom";
-import { useState, React } from 'react';
-import { MyContext } from "./MyContext";
-import MyComponent from "./MyComponent"
+import React from 'react';
+import Login from "./pages/Login.jsx";
 import './App.css'
 
 const App = () => {
-  
+
 
   return (
     <>
-      <div>
-    
-      </div>
+      <section>
+        <Login />
+      </section>
     </>
   )
 }
