@@ -1,35 +1,63 @@
 import React, { useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
-
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleEmailRegistration = async (e) => {
     e.preventDefault();
-    setError;
+    setError("");
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // create Firebase auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const firebaseUID = userCredential.user.uid;
+
+      // stores user data in backend database
+      const response = await fetch("http://localhost:3000/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await userCredential.user.getIdToken()}`, //firebase token
+        },
+        body: JSON.stringify({
+          id: firebaseUID,
+          email,
+          name,
+          dateOfBirth: dateOfBirth || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to store user data");
+      }
+
+      // navigates to login page
+      navigate("/user");
     } catch (error) {
       console.error(error);
       setError(error.message || "Account Creation Failed");
     }
   };
 
-  const handleGoogleSignUp = async () => {
+  const handleExistingUser = async () => {
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      navigate(`/user`);
     } catch (error) {
       console.error(error);
-      setError("Google registration failed");
+      setError("Redirect Failed");
     }
   };
 
@@ -47,16 +75,13 @@ const Register = () => {
         </p>
       )}
 
-      
-
       <div className="w-full max-w-md space-y-5 mx-auto">
         <form onSubmit={handleEmailRegistration}>
-
           <div>
             <input
-              type="name"
-              //value={email}
-              //onChange={}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
               placeholder="Your full name"
               className="w-full px-4 py-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-gray-400 mb-10"
@@ -90,8 +115,8 @@ const Register = () => {
               type="date"
               id="dob"
               name="dob"
-              //value={}
-              //onChange={}
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
               required
               placeholder="Date of Birth"
               className="w-full px-4 py-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-accent mt-10 text-gray-400"
@@ -105,9 +130,15 @@ const Register = () => {
           >
             Create Account
           </button>
+
+          <h3
+            className="text-1xl font-semibold text-center mt-10"
+            style={{ color: "#6e6295" }}
+            onClick={handleExistingUser}
+          >
+            Already have an account? Click here to Login!
+          </h3>
         </form>
-
-
       </div>
     </div>
   );
