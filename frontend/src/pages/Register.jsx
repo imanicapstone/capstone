@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from '../constants'; 
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -11,25 +12,24 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const { register } = useAuth();
+
   const handleEmailRegistration = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
       // create Firebase auth user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await register(email, password);
       const firebaseUID = userCredential.user.uid;
+      const token = await userCredential.user.getIdToken();
 
       // stores user data in backend database
-      const response = await fetch("http://localhost:3000/user", {
+      const response = await fetch(`${API_BASE_URL}/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${await userCredential.user.getIdToken()}`, //firebase token
+          Authorization: `Bearer ${token}`, //firebase token
         },
         body: JSON.stringify({
           id: firebaseUID,
@@ -40,12 +40,13 @@ const Register = () => {
       });
 
       if (!response.ok) {
+        console.log(response)
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to store user data");
       }
 
       // navigates to login page
-      navigate("/user");
+      navigate("/user/:id");
     } catch (error) {
       console.error(error);
       setError(error.message || "Account Creation Failed");

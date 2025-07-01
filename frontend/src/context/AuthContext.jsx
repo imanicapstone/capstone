@@ -51,14 +51,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser }}>
+    <AuthContext.Provider value={ value }>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
-export const register = (email, password) =>
-  createUserWithEmailAndPassword(auth, email, password);
-export const login = (email, password) =>
-  signInWithEmailAndPassword(auth, email, password);
+

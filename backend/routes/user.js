@@ -2,38 +2,45 @@ const express = require("express");
 const user = express.Router();
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
-const bcrypt = require("bcrypt");
+const authenticate = require("../middleware/auth");
 // create a user
-user.post("/", async (req, res) => {
-  const { email, password, name, dateOfBirth } = req.body;
+user.post("/", authenticate, async (req, res) => {
+  const { id, email, name, dateOfBirth } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
+  if (!id || !email) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  if (req.user.uid !== id) {
+    return res.status(403).json({ error: "UID mismatch" });
+  }
 
   try {
-    const newUser = await prisma.user.create({
-      data: {
+    const newUser = await prisma.user.upsert({
+      where: { id },
+      update: {}, // Don't update if exists
+      create: {
+        id,
         email,
-        password: hashedPassword,
         name: name || null,
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       },
     });
 
-    // does not return the password in the response
-    const { password: _, ...userWithoutPassword } = newUser;
-    res.status(201).json(userWithoutPassword);
-  } catch (error) {
-    console.error("Failed to create user:", error);
-    if (error.code === "P2002") {
-      return res.status(400).json({ error: "Email already exists" });
+    // creation or existing user
+    const isNewUser =
+      newUser.createdAt.getTime() === newUser.updatedAt.getTime();
+    if (!isNewUser) {
+      return res.status(409).json({ error: "User already exists" });
     }
-    res.status(400).json({ error: "Failed to create user" });
+
+    return res.status(201).json(newUser);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to create user" });
   }
 });
+
 // get a specific user's information
 user.get("/:id", async (req, res) => {
   const { id } = req.params;
@@ -57,7 +64,7 @@ user.get("/:id", async (req, res) => {
 
 user.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { email, password } = req.body;
+  const { email } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -71,9 +78,7 @@ user.put("/:id", async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
-        id,
         email,
-        password,
       },
     });
 
@@ -110,17 +115,19 @@ user.patch("/salary", async (req, res) => {
 
 // route to get a user's salary
 
-user.get("/salary", async (req, res) => {
-  const { id, salary } = req.body;
+user.get("/salary", authenticate, async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) return res.status(400).json({ error: "Missing user id" });
 
   try {
-    const userSalary = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
+    const userData = await prisma.user.findUnique({
+      where: { id },
     });
-    if (!user) {
+    if (!userData || userData.salary == null) {
       return res.status(404).json({ error: "Salary not found " });
     }
-    res.json(salary);
+    res.json({ salary: userData.salary });
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
@@ -130,7 +137,14 @@ user.get("/salary", async (req, res) => {
 
 user.post("/transaction", async (req, res) => {
   const { userId, amount, type, category, description, date } = req.body;
-  if ((!userId || amount == null, !category, !type, !description || !date)) {
+  if (
+    !userId ||
+    amount == null ||
+    !category ||
+    !type ||
+    !description ||
+    !date
+  ) {
     return res.status(400).json({ error: "Missing required fields!" });
   }
 
@@ -154,13 +168,13 @@ user.post("/transaction", async (req, res) => {
 
 // route to get a transaction
 
-user.get("/transaction", async (req, res) => {
+user.get("/transaction", authenticate, async (req, res) => {
   const { id } = req.params;
   const { userId, amount, category, date } = req.body;
 
   try {
     const userTransaction = await prisma.Transaction.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
     });
     if (!userTransaction) {
       return res.status(404).json({ error: "Transaction not found " });
@@ -220,20 +234,4 @@ user.delete("/transaction/:id", async (req, res) => {
   }
 });
 
-export default user;
-
-user.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await prisma.user.findUnique({ where: { email } });
-
-  if (!user) {
-    return res.status(401).json({ error: "Invalid email" });
-  }
-
-  const validPassword = await bcrypt.compare(password, user.password);
-
-  if (!validPassword) {
-    return res.status(401).json({ error: "Invalid email or password" });
-  }
-});
+module.exports = user;
