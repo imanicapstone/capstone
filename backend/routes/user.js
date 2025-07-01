@@ -5,7 +5,12 @@ const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 // create a user
 user.post("/", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name, dateOfBirth } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
@@ -13,31 +18,20 @@ user.post("/", async (req, res) => {
       data: {
         email,
         password: hashedPassword,
-        // profile data
-        profile: {
-          create: {
-            ageRange: "",
-            gender: "",
-            occupation: "",
-          },
-        },
-        sensitiveData: {
-          create: {
-            salary: "",
-          },
-        },
-      },
-      include: {
-        profile: true,
-        sensitiveData: true,
+        name: name || null,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       },
     });
 
-
-    res.json(newUser);
+    // does not return the password in the response
+    const { password: _, ...userWithoutPassword } = newUser;
+    res.status(201).json(userWithoutPassword);
   } catch (error) {
-    res.status(400).send("Failed to create user");
-    throw error;
+    console.error("Failed to create user:", error);
+    if (error.code === "P2002") {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+    res.status(400).json({ error: "Failed to create user" });
   }
 });
 // get a specific user's information
@@ -90,7 +84,6 @@ user.put("/:id", async (req, res) => {
 });
 
 // add route to partially update user here
-
 
 // add or update user salary
 
@@ -172,7 +165,7 @@ user.get("/transaction", async (req, res) => {
     if (!userTransaction) {
       return res.status(404).json({ error: "Transaction not found " });
     }
-    res.json({amount, category, date});
+    res.json({ amount, category, date });
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
@@ -229,18 +222,18 @@ user.delete("/transaction/:id", async (req, res) => {
 
 export default user;
 
-user.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+user.post("/login", async (req, res) => {
+  const { email, password } = req.body;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email } });
 
-    if(!user) {
-        return res.status(401).json({ error: 'Invalid email'});
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Invalid email" });
+  }
 
-    const validPassword = await bcrypt.compare(password, user.password);
+  const validPassword = await bcrypt.compare(password, user.password);
 
-    if(!validPassword) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-    }
-})
+  if (!validPassword) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
+});

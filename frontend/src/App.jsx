@@ -1,15 +1,13 @@
-import React from 'react';
+import React from "react";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-import './App.css'
-import { Button } from "@/components/ui/button"
+import Dashboard from "./pages/Dashboard.jsx";
+import { Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import "./App.css";
 
 const App = () => {
-
-
-  return (
-      <Register />
-  )
-}
+  return <Dashboard />;
+};
 
 export default App;

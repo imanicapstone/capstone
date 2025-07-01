@@ -16,26 +16,29 @@ datasource db {
 
 model User {
   id                String                @id @default(cuid())
-  id                String                @id @default(cuid())
   email             String                @unique
   password          String
-  salary            Float
+  name              String?
+  dateOfBirth       DateTime?
+  salary            Float?
   ageRange          String?
   gender            String?
   occupation        String?
-          
-  transactions      Transaction[]      
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  transactions      Transaction[]
 }
-
-
 
 model Transaction {
   id              String    @id @default(cuid())
-  userId          String    
-  user            User      @relation("Transaction", fields: [userId], references: [id])
-
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
   amount          Float
+  type            String
   category        String
+  description     String?
   date            DateTime
-
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }

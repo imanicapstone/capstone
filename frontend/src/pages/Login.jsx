@@ -5,19 +5,26 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 import { auth } from "../firebase";
-
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const userId = userCredential.user.uid;
+      navigate(`/user/${userId}`);
     } catch (error) {
       console.error(error);
       setError(error.message || "Login failed");
@@ -27,21 +34,32 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      const userId = userCredential.user.uid;
+      navigate(`/user/${userId}`);
     } catch (error) {
       console.error(error);
       setError("Google login failed");
     }
   };
 
+  const handleNewUser = async () => {
+    try {
+      navigate(`/`);
+    } catch (error) {
+      console.error(error);
+      setError("Redirect Failed");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white p-6">
-  <h2
-    className="text-4xl font-semibold text-center mb-24"
-    style={{ color: "#6e6295" }}
-  >
-    Sign in to your Account
-  </h2>
+      <h2
+        className="text-4xl font-semibold text-center mb-24"
+        style={{ color: "#6e6295" }}
+      >
+        Sign in to your Account
+      </h2>
 
       {error && (
         <p className="bg-red-100 text-red-700 text-center rounded-md p-2 mb-4">
@@ -104,6 +122,14 @@ const Login = () => {
         >
           Sign in with Google
         </button>
+
+        <h3
+          className="text-1xl font-semibold text-center mt-10"
+          style={{ color: "#6e6295" }}
+          onClick={handleNewUser}
+        >
+          New to Fina? Click here to create an account!
+        </h3>
       </div>
     </div>
   );
