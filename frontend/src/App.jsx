@@ -7,7 +7,16 @@ import { useState, useEffect } from "react";
 import "./App.css";
 
 const App = () => {
-  return <Dashboard />;
+  
+  return( 
+  
+  <Routes>
+      <Route path="/" element={<Register />} />
+      <Route path="/user/:id" element={ <Dashboard />} />
+      <Route path="/user" element={ <Login />} />
+
+  </Routes>
+  )
 };
 
 export default App;

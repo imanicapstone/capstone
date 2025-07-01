@@ -15,24 +15,29 @@ user.post("/", authenticate, async (req, res) => {
     return res.status(403).json({ error: "UID mismatch" });
   }
 
-
   try {
-    const newUser = await prisma.user.create({
-      data: {
-        id, //firebase uid
+    const newUser = await prisma.user.upsert({
+      where: { id },
+      update: {}, // Don't update if exists
+      create: {
+        id,
         email,
         name: name || null,
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       },
     });
 
-    // does not return the password in the response
+    // creation or existing user
+    const isNewUser =
+      newUser.createdAt.getTime() === newUser.updatedAt.getTime();
+    if (!isNewUser) {
+      return res.status(409).json({ error: "User already exists" });
+    }
+
     return res.status(201).json(newUser);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to create user"  });
-
-
+    return res.status(500).json({ error: "Failed to create user" });
   }
 });
 
@@ -85,7 +90,6 @@ user.put("/:id", async (req, res) => {
 
 // add route to partially update user here
 
-
 // add or update user salary
 
 user.patch("/salary", async (req, res) => {
@@ -133,7 +137,14 @@ user.get("/salary", authenticate, async (req, res) => {
 
 user.post("/transaction", async (req, res) => {
   const { userId, amount, type, category, description, date } = req.body;
-  if ((!userId || amount == null || !category || !type || !description || !date)) {
+  if (
+    !userId ||
+    amount == null ||
+    !category ||
+    !type ||
+    !description ||
+    !date
+  ) {
     return res.status(400).json({ error: "Missing required fields!" });
   }
 
@@ -168,7 +179,7 @@ user.get("/transaction", authenticate, async (req, res) => {
     if (!userTransaction) {
       return res.status(404).json({ error: "Transaction not found " });
     }
-    res.json({amount, category, date});
+    res.json({ amount, category, date });
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
