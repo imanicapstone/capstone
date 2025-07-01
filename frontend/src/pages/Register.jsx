@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -11,18 +11,17 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const { register } = useAuth();
+
   const handleEmailRegistration = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
       // create Firebase auth user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await register(email, password);
       const firebaseUID = userCredential.user.uid;
+      const token = await userCredential.user.getIdToken();
 
       // stores user data in backend database
       const response = await fetch("http://localhost:3000/user", {
