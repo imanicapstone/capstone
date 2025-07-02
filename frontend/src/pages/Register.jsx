@@ -46,7 +46,7 @@ const Register = () => {
       }
 
       // navigates to login page
-      navigate("/user/:id");
+      navigate("/user");
     } catch (error) {
       console.error(error);
       setError(error.message || "Account Creation Failed");
@@ -55,7 +55,7 @@ const Register = () => {
 
   const handleExistingUser = async () => {
     try {
-      navigate(`/user`);
+      navigate('/user');
     } catch (error) {
       console.error(error);
       setError("Redirect Failed");
