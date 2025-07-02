@@ -10,9 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import Navbar from "../components/Navbar";
+
 const Dashboard = () => {
   return (
-    <div className="flex flex-col items-start justify-center space-y-10 p-0 h-screen w-screen max-w-full text-[#887bb0] font-sans">
+    <div> 
+    <Navbar /> 
+    <div className="flex flex-col items-start justify-center space-y-10 p-0 h-screen w-screen max-w-full text-[#887bb0] font-sans"> 
       <Card className=" ml-0 w-[48vw] max-w-[600px] min-w-[280px] h-25 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300">
         <CardHeader>
           <CardTitle className="text-gray-50 text-xl font-semibold">
@@ -34,6 +38,7 @@ const Dashboard = () => {
         </CardFooter>
       </Card>
     </div>
+</div>
   );
 };
 
