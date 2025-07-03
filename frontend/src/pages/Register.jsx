@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { API_BASE_URL } from '../constants'; 
+import { API_BASE_URL } from "../constants";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -40,13 +40,13 @@ const Register = () => {
       });
 
       if (!response.ok) {
-        console.log(response)
+        console.log(response);
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to store user data");
       }
 
       // navigates to login page
-      navigate("/user");
+      navigate("/user/:id");
     } catch (error) {
       console.error(error);
       setError(error.message || "Account Creation Failed");
@@ -55,7 +55,7 @@ const Register = () => {
 
   const handleExistingUser = async () => {
     try {
-      navigate('/user');
+      navigate("/user");
     } catch (error) {
       console.error(error);
       setError("Redirect Failed");
