@@ -5,7 +5,10 @@ const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const links = [{ path: "/user/:id", label: "Dashboard" }];
+  const links = [
+    { path: "/user/:id", label: "Dashboard" },
+    { path: `/user/:id/transactions`, label: "Transactions" },
+  ];
 
   const handleNavigation = (path) => {
     navigate(path);
