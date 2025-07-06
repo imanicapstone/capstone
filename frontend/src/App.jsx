@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./App.css";
-import recentTransactions from "./components/recentTransactions";
+import RecentTransactions from "./components/RecentTransactions.jsx";
 
 const App = () => {
   return (
@@ -13,6 +13,7 @@ const App = () => {
       <Route path="/" element={<Register />} />
       <Route path="/user/:id" element={<Dashboard />} />
       <Route path="/user" element={<Login />} />
+      <Route path="/user/transactions" element={<RecentTransactions />} />
     </Routes>
   );
 };
