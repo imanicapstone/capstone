@@ -8,6 +8,8 @@ const Sidebar = ({ isOpen, onClose }) => {
   const links = [
     { path: `/user/:id`, label: "Dashboard" },
     { path: `/user/:id/goals`, label: "Goals" },
+    { path: `/user/:id/reminders`, label: "Reminders"},
+    { path: `/user/:id/transactions`, label: "Transactions"},
   ];
 
   const handleNavigation = (path) => {
