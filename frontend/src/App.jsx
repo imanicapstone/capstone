@@ -15,6 +15,7 @@ const App = () => {
       <Route path="/user/:id" element={<Dashboard />} />
       <Route path="/user" element={<Login />} />
       <Route path="/user/:id/goals" element={<GoalsPage />}></Route>
+      <Route path="user/:id/transactions" element={<RecentTransactions />} />
     </Routes>
   );
 };

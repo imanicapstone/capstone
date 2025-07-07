@@ -24,7 +24,7 @@ const Dashboard = () => {
     setError("");
 
     try {
-      navigate("/user/transactions");
+      navigate("/user/:id/transactions");
     } catch (error) {
       console.error(error);
       setError(error.message || "Redirect Failed");
