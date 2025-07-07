@@ -13,8 +13,24 @@ import {
 import BankStatus from "../components/BankStatus";
 import Navbar from "../components/Navbar";
 import CircularLoader from "../components/CircularLoader";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+
+  const handleTransactionClick = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      navigate("/user/transactions");
+    } catch (error) {
+      console.error(error);
+      setError(error.message || "Redirect Failed");
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -40,7 +56,10 @@ const Dashboard = () => {
             </CardHeader>
           </Card>
 
-          <Card className="w-[48vw] max-w-[600px] min-w-[280px] h-48 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300">
+          <Card
+            className="w-[48vw] max-w-[600px] min-w-[280px] h-48 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
+            onClick={handleTransactionClick}
+          >
             <CardHeader>
               <CardTitle className="text-gray-50 text-xl font-semibold">
                 Recent Transactions

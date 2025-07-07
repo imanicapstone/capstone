@@ -6,6 +6,7 @@ import GoalsPage from "./pages/GoalsPage.jsx";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./App.css";
+import RecentTransactions from "./components/RecentTransactions.jsx";
 
 const App = () => {
   return (
