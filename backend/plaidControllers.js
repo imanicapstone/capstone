@@ -72,3 +72,41 @@ exports.getConnectionStatus = async (req, res) => {
     res.status(500).json({ error: "Could not check status" });
   }
 };
+
+exports.getTransactions = async (req, res) => {
+  const firebaseUid = req.user.uid;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: firebaseUid },
+    });
+
+    if (!user?.plaidAccessToken) {
+      return res.status(400).json({ error: "No Plaid access token found" });
+    }
+
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const endDate = new Date();
+
+    const response = await plaidClient.transactionsGet({
+      access_token: user.plaidAccessToken,
+      start_date: startDate.toISOString().split("T")[0],
+      end_date: endDate.toISOString().split("T")[0],
+      options: { count: 50 },
+    });
+
+    const transactions = response.data.transactions.map((tx) => ({
+      id: tx.transaction_id,
+      name: tx.name,
+      amount: tx.amount,
+      date: tx.date,
+      merchant: tx.merchant_name || tx.name || "Unknown Merchant", // Use merchant_name, fallback to name, then default
+    }));
+
+    res.json(transactions);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+};
