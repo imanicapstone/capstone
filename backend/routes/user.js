@@ -3,6 +3,7 @@ const user = express.Router();
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const authenticate = require("../middleware/auth");
+const plaidClient = require("../plaidClient");
 // create a user
 user.post("/", authenticate, async (req, res) => {
   const { id, email, name, dateOfBirth } = req.body;
@@ -149,7 +150,7 @@ user.post("/transaction", async (req, res) => {
   }
 
   try {
-    const newTransaction = await prisma.Transaction.create({
+    const newTransaction = await prisma.transaction.create({
       data: {
         userId,
         amount: parseFloat(amount),
@@ -169,19 +170,73 @@ user.post("/transaction", async (req, res) => {
 // route to get a transaction
 
 user.get("/transaction", authenticate, async (req, res) => {
-  const { id } = req.params;
-  const { userId, amount, category, date } = req.body;
+  try {
+    const { userId } = req.params;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.plaidAccessToken) {
+      return res.status(400).json({ error: "User or access token not found" });
+    }
+
+    // get transactions from plaid
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1); // past 30 days
+
+    const response = await plaidClient.transactionsGet({
+      access_token: user.plaidAccessToken,
+      start_date: startDate.toISOString().split("T")[0],
+      end_date: now.toISOString().split("T")[0],
+      options: { count: 50 },
+    });
+
+    const plaidTransactions = response.data.transactions;
+
+    // store new transactions in db
+    for (const tx of plaidTransactions) {
+      const exists = await prisma.transaction.findFirst({
+        where: { id: tx.transaction_id },
+      });
+
+      if (!exists) {
+        await prisma.transaction.create({
+          data: {
+            id: tx.transaction_id,
+            userId: userId,
+            plaidAccountId: tx.account_id,
+            name: tx.name,
+            amount: tx.amount,
+            category: tx.category?.[0] || null,
+            date: new Date(tx.date),
+          },
+        });
+      }
+    }
+
+    res.json({
+      message: "Transactions synced",
+      count: plaidTransactions.length,
+    });
+  } catch (error) {
+    console.error("Error syncing transactions:", error);
+  }
+});
+
+//list multiple transactions
+
+user.get("/transactions/list", async (req, res) => {
+  const { userId } = req.query;
 
   try {
-    const userTransaction = await prisma.Transaction.findUnique({
-      where: { id },
+    const transactions = await prisma.transaction.findMany({
+      where: { userId },
+      orderBy: { date: "desc" },
+      take: 50,
     });
-    if (!userTransaction) {
-      return res.status(404).json({ error: "Transaction not found " });
-    }
-    res.json({ amount, category, date });
+
+    res.json(transactions);
   } catch (error) {
-    res.status(404).send("ID is not valid");
+    res.status(500).json({ error: "Could not retrieve transactions" });
   }
 });
 
@@ -195,7 +250,7 @@ user.put("/transaction/:id", async (req, res) => {
   }
 
   try {
-    const updatedTransaction = await prisma.Transaction.update({
+    const updatedTransaction = await prisma.transaction.update({
       where: { id },
       data: {
         userId,
@@ -209,8 +264,6 @@ user.put("/transaction/:id", async (req, res) => {
   } catch (error) {
     return res.status(404).json({ error: "Transaction not found" });
   }
-
-  res.status(500).json({ error: "Internal server error" });
 });
 
 // route to delete a transation
@@ -219,7 +272,7 @@ user.delete("/transaction/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedTransaction = await prisma.Transaction.delete({
+    const deletedTransaction = await prisma.transaction.delete({
       where: { id },
     });
 
@@ -231,6 +284,98 @@ user.delete("/transaction/:id", async (req, res) => {
     console.error("Failed to delete transaction:", error);
 
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+user.post("/goal", async (req, res) => {
+  const {
+    userId,
+    title,
+    description,
+    targetAmount,
+    currentAmount,
+    deadline,
+    createdAt,
+    updatedAt,
+  } = req.body;
+
+  if (
+    !userId ||
+    title == null ||
+    !description ||
+    !targetAmount ||
+    !currentAmount ||
+    !deadline
+  ) {
+    return res.status(400).json({ error: "Missing required fields!" });
+  }
+
+  try {
+    const newGoal = await prisma.financialGoal.create({
+      data: {
+        userId,
+        title,
+        description,
+        targetAmount: parseFloat(targetAmount),
+        currentAmount: parseFloat(currentAmount),
+        deadline,
+        createdAt: new Date(deadline),
+        updatedAt,
+        date: new Date(deadline),
+      },
+    });
+    res.status(200).json(newGoal);
+  } catch (error) {
+    return res.status(404).json({ error: "Internal Error" });
+  }
+
+  res.status(500).json({ error: "Internal server error" });
+});
+// get multiple goals
+
+user.get("/goals/:id", authenticate, async (req, res) => {
+  const {
+    userId,
+    title,
+    description,
+    targetAmount,
+    currentAmount,
+    deadline,
+    createdat,
+    updatedAt,
+    date,
+  } = req.body;
+
+  try {
+    const userGoal = await prisma.financialGoal.findMany({
+      where: { userId },
+    });
+    if (!userGoal) {
+      return res.status(404).json({ error: "Goal not found " });
+    }
+    res.json({ amount, category, date });
+  } catch (error) {
+    res.status(404).send("ID is not valid");
+  }
+});
+
+// get single goal
+
+user.get("/goal/:id", authenticate, async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const goal = await prisma.financialGoal.findUnique({
+      where: { id },
+    });
+
+    if (!goal) {
+      return res.status(404).json({ error: "Goal not found" });
+    }
+
+    res.json(goal);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch goal" });
   }
 });
 

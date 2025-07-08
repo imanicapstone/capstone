@@ -22,7 +22,8 @@ const GoalsPage = ({ userId }) => {
   return (
     <div>
       <Navbar />
-      <h2>My Financial Goals</h2>
+      <h2 className="text-4xl font-semibold text-center mb-24"
+        style={{ color: "#6e6295" }}>My Financial Goals</h2>
       <GoalForm userId={userId} onGoalCreated={handleNewGoal} />
       <div className="goals-container">
         {goals.map((goal) => (

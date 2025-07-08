@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id                String                @id 
+  id                String                @id
   email             String                @unique
   name              String?
   dateOfBirth       DateTime?
@@ -30,6 +30,7 @@ model User {
   bankConnected     Boolean   @default(false)
 
   transactions      Transaction[]
+  financialGoals    FinancialGoal[]
 }
 
 model Transaction {
@@ -44,6 +45,40 @@ model Transaction {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
+
+model FinancialGoal {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  title           String
+  description     String
+  targetAmount    Float
+  currentAmount   Float     @default(0)
+  deadline        DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Reminder {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  type            ReminderType
+  title           String
+  message         String
+  isActive        Boolean     @default(true)
+  hasBeenshown    Boolean     @default(false)
+  triggeredAt     DateTime?  
+  createdAt       DateTime  @updatedAt
+  updatedAt       DateTime  @updatedAt
+}
+
+enum ReminderType {
+  SPENDING_OVER_BUDGET
+  GOAL_OFF_TRACK
+  UNADDRESSED_REMINDERS
+}
+
 
 model Budget {
   id              String    @id @default(cuid())

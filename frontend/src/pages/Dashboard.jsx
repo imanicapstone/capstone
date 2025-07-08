@@ -19,17 +19,14 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const handleTransactionClick = async (e) => {
-    e.preventDefault();
-    setError("");
+  const handleTransactionClick = () => {
+    navigate("/user/:id/transactions");
 
-    try {
-      navigate("/user/:id/transactions");
-    } catch (error) {
-      console.error(error);
-      setError(error.message || "Redirect Failed");
-    }
   };
+
+  const handleRemindersClick = () => {
+    navigate("/user/:id/reminders")
+  }
 
   return (
     <div>
@@ -51,13 +48,12 @@ const Dashboard = () => {
           <Card className=" ml-0 w-[48vw] max-w-[600px] min-w-[280px] h-25 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300">
             <CardHeader>
               <CardTitle className="text-gray-50 text-xl font-semibold">
-                Upcoming Expenses
+                Goals
               </CardTitle>
             </CardHeader>
           </Card>
 
-          <Card
-            className="w-[48vw] max-w-[600px] min-w-[280px] h-48 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
+          <Card className="w-[48vw] max-w-[600px] min-w-[280px] h-48 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
             onClick={handleTransactionClick}
           >
             <CardHeader>
@@ -70,6 +66,16 @@ const Dashboard = () => {
             <CardFooter>
               <p></p>
             </CardFooter>
+          </Card>
+
+          <Card className=" ml-0 w-[48vw] max-w-[600px] min-w-[280px] h-25 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
+          onClick={handleRemindersClick}>
+            <CardHeader >
+              <CardTitle className="text-gray-50 text-xl font-semibold">
+                Reminders
+              </CardTitle>
+              <CardAction></CardAction>
+            </CardHeader>
           </Card>
         </div>
 
