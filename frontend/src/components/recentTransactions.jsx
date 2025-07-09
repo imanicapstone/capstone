@@ -55,7 +55,7 @@ const recentTransactions = () => {
     };
 
     fetchTransactions();
-  }, [userId]);
+  }, [currentUser]);
 
   return (
     <div>
@@ -82,8 +82,9 @@ const recentTransactions = () => {
                 <ul>
                   {transactions.map((tx) => (
                     <li key={tx.id}>
-                      {tx.date.slice(0, 10)} - {tx.name} - ${tx.amount.toFixed(2)}{" "}
-                      - {tx.merchant} - <br></br> <br></br>
+                      {tx.date.slice(0, 10)} - {tx.name} - $
+                      {tx.amount.toFixed(2)} - {tx.merchant} - <br></br>{" "}
+                      <br></br>
                     </li>
                   ))}
                 </ul>

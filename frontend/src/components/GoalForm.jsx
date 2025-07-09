@@ -3,13 +3,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_BASE_URL } from "../constants";
+import { useAuth } from "../context/AuthContext";
 
 const GoalForm = ({ userId, onGoalCreated }) => {
+  const { currentUser } = useAuth();
   const [form, setForm] = useState({
     title: "",
     description: "",
     targetAmount: "",
     deadline: "",
+    avoidMerchant: "",
   });
 
   const handleChange = (e) => {
@@ -19,24 +23,65 @@ const GoalForm = ({ userId, onGoalCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:3000/user/goal", {
-      method: "POST",
-      headers: { "Content-type": "application/json" },
-      body: JSON.stringify({ ...form, userId, currentAmount: 0 }),
-    });
+    try {
+      const token = await currentUser.getIdToken();
+      // creates goal first
+      const goalRes = await fetch(`${API_BASE_URL}/user/goal`, {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          userId,
+          currentAmount: 0.01, //non zero value so js does not classify as null
+          deadline: form.deadline
+            ? new Date(form.deadline).toISOString()
+            : null,
+          updatedAt: new Date().toISOString(), //makes sure updatedAt is sent into prisma
+        }),
+      });
 
-    if (res.ok) {
-      const newGoal = await res.json();
+      if (!goalRes.ok) {
+        const goalError = await goalRes.json();
+        console.error("Goal creation failed:", goalError);
+        return;
+      }
+
+      const newGoal = await goalRes.json();
+
+      // only add merchant if user specified
+      if (form.avoidMerchant.trim()) {
+        try {
+          const merchantRes = await fetch(
+            `${API_BASE_URL}/user/avoided-merchant`,
+            {
+              method: "POST",
+              headers: {
+                "Content-type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ merchantName: form.avoidMerchant.trim() }),
+            }
+          );
+
+          if (!merchantRes.ok) {
+            const merchantError = await merchantRes.json();
+            console.warn("Merchant addition failed:", merchantError);
+          }
+        } catch (merchantError) {
+          console.warn("Merchant API error:", merchantError);
+        }
+      }
+
       onGoalCreated(newGoal);
       setForm({
         title: "",
         description: "",
         targetAmount: "",
         deadline: "",
+        avoidMerchant: "",
       });
-    } else {
-      const error = await res.json();
-      console.error(error)
+    } catch (error) {
+      console.error("Form submission error", error);
     }
   };
 
@@ -95,7 +140,18 @@ const GoalForm = ({ userId, onGoalCreated }) => {
             />
           </div>
 
-          <Button type="submit" className="w-full bg-[#ceb8db]" >
+          <div>
+            <Label htmlFor="avoidMerchant">Merchant to Avoid (Optional)</Label>
+            <Input
+              name="avoidMerchant"
+              id="avoidMerchant"
+              value={form.avoidMerchant}
+              onChange={handleChange}
+              placeholder="e.g. Amazon, Starbucks"
+            />
+          </div>
+
+          <Button type="submit" className="w-full bg-[#ceb8db]">
             Set Goal
           </Button>
         </form>

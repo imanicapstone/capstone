@@ -6,59 +6,65 @@ import BudgetCard from "../components/BudgetCard";
 import Navbar from "../components/Navbar";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../constants";
 
 const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
-  const { id: userId } = useParams();
   const [budget, setBudget] = useState(null);
   const { currentUser } = useAuth();
 
+  const { id: userId } = useParams();
+  const actualUserId = currentUser?.uid; // checks if user is loaded in first
+
   useEffect(() => {
-    const fetchGoals = async () => {
-  try {
-    const token = await currentUser.getIdToken();
-    
-    const res = await fetch(`http://localhost:3000/user/goals/${userId}`, {
-      method: "GET",
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
-      setGoals(Array.isArray(data) ? data : []);
-    } else {
-      setGoals([]);
+    if (!currentUser || !actualUserId) {
+      return;
     }
-  } catch (error) {
-    console.error('Error fetching goals:', error);
-    setGoals([]);
-  }
-};
+    const fetchGoals = async () => {
+      try {
+        const token = await currentUser.getIdToken();
+
+        const res = await fetch(`${API_BASE_URL}/user/goals/${actualUserId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setGoals(Array.isArray(data) ? data : []);
+        } else {
+          setGoals([]);
+        }
+      } catch (error) {
+        console.error("Error fetching goals:", error);
+        setGoals([]);
+      }
+    };
 
     const fetchBudget = async () => {
       try {
-    const token = await currentUser.getIdToken();
-    const res = await fetch(`http://localhost:3000/user/budget/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        const token = await currentUser.getIdToken();
+        const res = await fetch(`${API_BASE_URL}/user/budget/${actualUserId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setBudget(data);
+        }
+      } catch (error) {
+        console.error("Error fetching budget:", error);
       }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setBudget(data);
-    }
-  } catch (error) {
-    console.error('Error fetching budget:', error);
-  }
     };
 
     fetchGoals();
     fetchBudget();
-  }, [userId]);
+  }, [userId, actualUserId]);
 
   const handleNewGoal = (goal) => {
     setGoals((prev) => [goal, ...prev]);
@@ -90,11 +96,15 @@ const GoalsPage = () => {
             {budget ? (
               <BudgetCard budget={budget} />
             ) : (
-              <BudgetForm userId={userId} onBudgetCreated={handleNewBudget} currentUser={currentUser} />
+              <BudgetForm
+                userId={currentUser.uid}
+                onBudgetCreated={handleNewBudget}
+                currentUser={currentUser}
+              />
             )}
           </div>
 
-          <GoalForm userId={userId} onGoalCreated={handleNewGoal} />
+          <GoalForm userId={currentUser.uid} onGoalCreated={handleNewGoal} />
           <div className="goals-container">
             {goals.map((goal) => (
               <GoalCard key={goal.id} goal={goal} />
