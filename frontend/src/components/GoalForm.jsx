@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const GoalForm = () => {
+const GoalForm = ({ userId, onGoalCreated }) => {
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -19,7 +19,7 @@ const GoalForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch("/user/goal", {
+    const res = await fetch("http://localhost:3000/user/goal", {
       method: "POST",
       headers: { "Content-type": "application/json" },
       body: JSON.stringify({ ...form, userId, currentAmount: 0 }),
@@ -36,6 +36,7 @@ const GoalForm = () => {
       });
     } else {
       const error = await res.json();
+      console.error(error)
     }
   };
 
