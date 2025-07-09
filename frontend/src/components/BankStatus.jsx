@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import PlaidLink from "./PlaidLink";
+import { API_BASE_URL } from "../constants";
+
 
 const BankStatus = () => {
   const [connected, setConnected] = useState(false);
@@ -15,7 +17,7 @@ const BankStatus = () => {
     try {
       const token = await currentUser.getIdToken();
       const response = await fetch(
-        "http://localhost:3000/plaid/connection-status",
+        `${API_BASE_URL}/plaid/connection-status`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
