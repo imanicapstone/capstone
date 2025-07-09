@@ -301,8 +301,8 @@ user.post("/goal", async (req, res) => {
 
   if (
     !userId ||
-    title == null ||
-    !description ||
+    title === null ||
+    description === undefined ||
     !targetAmount ||
     !currentAmount ||
     !deadline
@@ -319,32 +319,19 @@ user.post("/goal", async (req, res) => {
         targetAmount: parseFloat(targetAmount),
         currentAmount: parseFloat(currentAmount),
         deadline,
-        createdAt: new Date(deadline),
-        updatedAt,
         date: new Date(deadline),
+        updatedAt,
       },
     });
     res.status(200).json(newGoal);
   } catch (error) {
     return res.status(404).json({ error: "Internal Error" });
   }
-
-  res.status(500).json({ error: "Internal server error" });
 });
 // get multiple goals
 
 user.get("/goals/:id", authenticate, async (req, res) => {
-  const {
-    userId,
-    title,
-    description,
-    targetAmount,
-    currentAmount,
-    deadline,
-    createdat,
-    updatedAt,
-    date,
-  } = req.body;
+  const { id: userId } = req.params;
 
   try {
     const userGoal = await prisma.financialGoal.findMany({
@@ -353,7 +340,7 @@ user.get("/goals/:id", authenticate, async (req, res) => {
     if (!userGoal) {
       return res.status(404).json({ error: "Goal not found " });
     }
-    res.json({ amount, category, date });
+    res.json(userGoal);
   } catch (error) {
     res.status(404).send("ID is not valid");
   }
@@ -376,6 +363,84 @@ user.get("/goal/:id", authenticate, async (req, res) => {
     res.json(goal);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch goal" });
+  }
+});
+
+// create weekly budgets
+user.post("/budget", authenticate, async (req, res) => {
+  const { userId, amount } = req.body;
+
+  if (!userId || !amount) {
+    return res.status(400).json({ error: "Missing required fields!" });
+  }
+
+  try {
+    // get start of current week
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+
+    // check if budget already exists for the week
+    const existingBudget = await prisma.budget.findFirst({
+      where: {
+        userId,
+        weekStart: {
+          equals: weekStart,
+        },
+      },
+    });
+
+    if (existingBudget) {
+      const updatedBudget = await prisma.budget.update({
+        where: { id: existingBudget.id },
+        data: { amount: parseFloat(amount) },
+      });
+      return res.status(200).json(updatedBudget);
+    }
+
+    const newBudget = await prisma.budget.create({
+      data: {
+        userId,
+        amount: parseFloat(amount),
+        weekStart,
+      },
+    });
+
+    res.status(201).json(newBudget);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Error" });
+  }
+});
+
+// get budgets
+user.get("/budget/:userId", authenticate, async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+
+    const budget = await prisma.budget.findFirst({
+      where: {
+        userId,
+        weekStart: {
+          equals: weekStart,
+        },
+      },
+    });
+
+    if (!budget) {
+      return res.status(404).json({ error: "No budget found for this week" });
+    }
+
+    res.json(budget);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch budget" });
   }
 });
 

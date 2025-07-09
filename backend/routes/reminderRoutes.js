@@ -9,12 +9,10 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
   try {
     const { userId } = req.params;
 
-    console.log("Fetching reminders for userId:", userId);
 
     // Run budget reminder check to populate new reminders
     try {
       await budgetReminder(userId);
-      console.log("Budget reminder check completed");
     } catch (budgetError) {
       console.error("Budget reminder error (non-fatal):", budgetError);
       // Don't fail the whole request if budget reminder fails
@@ -30,7 +28,6 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
       },
     });
 
-    console.log("Found reminders:", reminders.length);
 
     res.status(200).json({
       success: true,

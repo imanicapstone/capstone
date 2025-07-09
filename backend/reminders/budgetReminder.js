@@ -18,7 +18,6 @@ module.exports = async function budgetReminder(userId) {
   });
 
   if (!budget) {
-    console.log("No weekly budget set");
     return;
   }
 
@@ -29,7 +28,6 @@ module.exports = async function budgetReminder(userId) {
   });
 
   if (!user?.plaidAccessToken) {
-    console.log("No Plaid access token found for user");
     return;
   }
 
