@@ -79,3 +79,15 @@ enum ReminderType {
   UNADDRESSED_REMINDERS
 }
 
+
+model Budget {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+
+  weekStart       DateTime      
+  amount          Float
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
