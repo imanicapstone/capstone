@@ -4,6 +4,7 @@ const PORT = 3000;
 const cors = require("cors");
 const userRouter = require("./routes/user");
 const plaidRouter = require("./routes/plaidRoutes");
+const reminderRouter = require("./routes/reminderRoutes");
 
 //middleware
 app.use(express.json());
@@ -16,6 +17,9 @@ app.use("/user", userRouter);
 
 //plaid routes
 app.use("/plaid", plaidRouter);
+
+//reminder routes
+app.use("/reminders", reminderRouter);
 
 // main route
 app.get("/", (req, res) => {

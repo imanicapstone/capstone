@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const recentTransactions = ({ userId }) => {
+const recentTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,7 +55,7 @@ const recentTransactions = ({ userId }) => {
     };
 
     fetchTransactions();
-  }, [currentUser, userId]);
+  }, [userId]);
 
   return (
     <div>

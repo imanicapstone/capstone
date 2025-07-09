@@ -13,12 +13,12 @@ import Navbar from "../components/Navbar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
+import { API_BASE_URL } from '../constants';
 
 const Reminders = () => {
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { id: urlUserId } = useParams();
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -31,13 +31,11 @@ const Reminders = () => {
           throw new Error("User not authenticated");
         }
 
-        console.log("Current user:", currentUser.uid);
         const token = await currentUser.getIdToken();
-        console.log("Token obtained:", token ? "Yes" : "No");
 
         // use the actual Firebase user ID instead of URL param
         const response = await fetch(
-          `http://localhost:3000/reminders/${currentUser.uid}`,
+          `${API_BASE_URL}/reminders/${currentUser.uid}`,
           {
             method: "GET",
             headers: {
@@ -47,16 +45,13 @@ const Reminders = () => {
           }
         );
 
-        console.log("Response status:", response.status);
 
         if (!response.ok) {
           const errorData = await response.text();
-          console.log("Error response:", errorData);
           throw new Error(`Failed to fetch reminders: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Response data:", data);
         setReminders(data.reminders || []);
       } catch (err) {
         console.error("Error fetching reminders:", err);

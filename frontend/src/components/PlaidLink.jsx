@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { usePlaidLink } from "react-plaid-link";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../constants";
+
 
 const PlaidLink = ({ onSuccess }) => {
   const [linkToken, setLinkToken] = useState(null);
@@ -12,7 +14,7 @@ const PlaidLink = ({ onSuccess }) => {
     try {
       const token = await currentUser.getIdToken();
       const response = await fetch(
-        "http://localhost:3000/plaid/create-link-token",
+        `${API_BASE_URL}/plaid/create-link-token`,
         {
           method: "POST",
           headers: {
@@ -34,7 +36,7 @@ const PlaidLink = ({ onSuccess }) => {
       try {
         const token = await currentUser.getIdToken();
         const response = await fetch(
-          "http://localhost:3000/plaid/exchange-public-token",
+          `${API_BASE_URL}/plaid/exchange-public-token`,
           {
             method: "POST",
             headers: {
