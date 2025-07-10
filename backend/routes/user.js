@@ -318,9 +318,8 @@ user.post("/goal", async (req, res) => {
         description,
         targetAmount: parseFloat(targetAmount),
         currentAmount: parseFloat(currentAmount),
-        deadline,
+        deadline: new Date(deadline),
         date: new Date(deadline),
-        updatedAt,
       },
     });
     res.status(200).json(newGoal);
@@ -415,8 +414,8 @@ user.post("/budget", authenticate, async (req, res) => {
 });
 
 // get budgets
-user.get("/budget/:userId", authenticate, async (req, res) => {
-  const { userId } = req.params;
+user.get("/budget/:id", authenticate, async (req, res) => {
+  const { id: userId } = req.params;
 
   try {
     const now = new Date();
@@ -441,6 +440,61 @@ user.get("/budget/:userId", authenticate, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch budget" });
+  }
+});
+
+// adds avoided merchant
+user.post("/avoided-merchant", authenticate, async (req, res) => {
+  const { merchantName } = req.body;
+  const userId = req.user.uid;
+
+  try {
+    const avoidedMerchant = await prisma.avoidedMerchant.create({
+      data: {
+        userId,
+        merchantName: merchantName.trim(),
+      },
+    });
+    res.json(avoidedMerchant);
+  } catch (error) {
+    if (error.code === "P2002") {
+      res.status(400).json({ error: "Merchant already in avoided list" });
+    } else {
+      res.status(500).json({ error: "Failed to add avoided merchant" });
+    }
+  }
+});
+
+// gets avoided merchants
+user.get("/avoided-merchants", authenticate, async (req, res) => {
+  const userId = req.user.uid;
+
+  try {
+    const avoidedMerchants = await prisma.avoidedMerchant.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(avoidedMerchants);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch avoided merchants" });
+  }
+});
+
+// deletes avoided merchant
+user.delete("/avoided-merchant/:id", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.uid;
+
+  try {
+    await prisma.avoidedMerchant.delete({
+      where: {
+        id,
+        userId, // user can only delete personal entries
+      },
+    });
+    res.json({ message: "Avoided merchant removed" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to remove avoided merchant" });
   }
 });
 
