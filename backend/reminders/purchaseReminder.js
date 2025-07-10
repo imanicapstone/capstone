@@ -58,21 +58,38 @@ module.exports = async function purchaseReminder(userId) {
     );
   });
 
+  // checks for existing
+
   // generates reminder for user to avoid merchant
   for (const transaction of violatingTransactions) {
     const merchantName =
       transaction.merchant_name || transaction.name || "unknown merchant";
 
-    await prisma.reminder.create({
-      data: {
+    const existingReminder = await prisma.reminder.findFirst({
+      where: {
         userId,
         type: "PURCHASE_REMINDER",
-        title: "Avoided Merchant Purchase Alert",
-        message: `You purchased from ${merchantName} on ${new Date(
-          transaction.date
-        ).toLocaleDateString()}. You said you wanted to avoid this merchant!`,
+        message: {
+          contains: merchantName,
+        },
+        createdAt: {
+          gte: new Date(transaction.date),
+        },
         isActive: true,
       },
     });
+    if (!existingReminder) {
+      await prisma.reminder.create({
+        data: {
+          userId,
+          type: "PURCHASE_REMINDER",
+          title: "Avoided Merchant Purchase Alert",
+          message: `You purchased from ${merchantName} on ${new Date(
+            transaction.date
+          ).toLocaleDateString()}. You said you wanted to avoid this merchant!`,
+          isActive: true,
+        },
+      });
+    }
   }
 };
