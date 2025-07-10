@@ -8,6 +8,8 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import RecentTransactions from "./components/RecentTransactions.jsx";
 import Reminders from "./pages/Reminders.jsx";
+import Settings from './pages/Settings';
+
 
 const App = () => {
   return (
@@ -18,6 +20,7 @@ const App = () => {
       <Route path="/user/:id/goals" element={<GoalsPage />} />
       <Route path="/user/:id/reminders" element={<Reminders />} />
       <Route path="/user/:id/transactions" element={<RecentTransactions />} />
+      <Route path="/user/:id/settings" element={<Settings />} />
     </Routes>
   );
 };
