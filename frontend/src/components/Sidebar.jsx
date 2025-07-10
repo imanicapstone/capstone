@@ -10,6 +10,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: `/user/:id/goals`, label: "Goals" },
     { path: `/user/:id/reminders`, label: "Reminders"},
     { path: `/user/:id/transactions`, label: "Transactions"},
+    { path: `/user/:id/settings`, label: "Settings"}
   ];
 
   const handleNavigation = (path) => {
