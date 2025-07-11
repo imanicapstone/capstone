@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const verifyFirebaseToken = require("../middleware/auth");
 const budgetReminder = require("../reminders/budgetReminder");
 const purchaseReminder = require("../reminders/purchaseReminder");
+const offTrackReminder = require("../reminders/offTrackReminder");
 
 router.get("/:userId", verifyFirebaseToken, async (req, res) => {
   try {
@@ -21,6 +22,12 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
       await purchaseReminder(userId);
     } catch (purchaseError) {
       console.error("Purchase reminder error (non-fatal)", purchaseError);
+    }
+
+    try {
+      await offTrackReminder(userId);
+    } catch (offTrackError) {
+      console.error("Off-track reminder error (non-fatal)", offTrackError);
     }
 
     // Fetch reminders

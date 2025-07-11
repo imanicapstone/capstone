@@ -1,21 +1,20 @@
-const { startOfWeek, endOfWeek } = require("date-fns");
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
+const { monthStart, monthEnd } = require('./monthutils');
 
 module.exports = async function budgetReminder(userId) {
-  const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // sunday
-  const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
+  const currentMonth = new Date();
 
   const budget = await prisma.budget.findFirst({
     where: {
       userId,
-      weekStart: {
-        equals: weekStart,
+      monthStart: {
+        equals: monthStart,
       },
     },
   });
+
 
   if (!budget) {
     return;
@@ -36,9 +35,9 @@ module.exports = async function budgetReminder(userId) {
   try {
     const response = await plaidClient.transactionsGet({
       access_token: user.plaidAccessToken,
-      start_date: weekStart.toISOString().split("T")[0],
-      end_date: weekEnd.toISOString().split("T")[0],
-      options: { count: 100 },
+      start_date: monthStart.toISOString().split("T")[0],
+      end_date: monthEnd.toISOString().split("T")[0],
+      options: { count: 499 },
     });
 
     transactions = response.data.transactions;
@@ -47,7 +46,8 @@ module.exports = async function budgetReminder(userId) {
     return;
   }
 
-  const totalSpent = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const totalSpent = transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0); // absolute value because plaid transactions are negative
+
 
   // checks if reminder already exists
   const existing = await prisma.reminder.findFirst({
@@ -55,20 +55,22 @@ module.exports = async function budgetReminder(userId) {
       userId,
       type: "SPENDING_OVER_BUDGET",
       createdAt: {
-        gte: weekStart,
-        lte: weekEnd,
+        gte: monthStart,
+        lte: monthEnd,
       },
       isActive: true,
     },
   });
+
+  const monthName = monthStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   if (totalSpent > budget.amount && !existing) {
     await prisma.reminder.create({
       data: {
         userId,
         type: "SPENDING_OVER_BUDGET",
-        title: "Be careful! you spent over your weekly budget.",
-        message: `You have spent $${totalSpent.toFixed(2)} this week.`,
+        title: "Be careful! you spent over your budget this month.",
+        message: `You spent $${totalSpent.toFixed(2)} in ${monthName}, which exceeded your budget of $${budget.amount.toFixed(2)}.`,
         isActive: true,
       },
     });
