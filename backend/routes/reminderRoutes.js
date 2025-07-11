@@ -32,10 +32,10 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
     }
 
     try {
-  await secondaryReminder(userId);
-} catch (secondaryError) {
-  console.error("Secondary reminder error (non-fatal):", secondaryError);
-}
+      await secondaryReminder(userId);
+    } catch (secondaryError) {
+      console.error("Secondary reminder error (non-fatal):", secondaryError);
+    }
 
     // Fetch reminders
     const reminders = await prisma.reminder.findMany({
@@ -64,15 +64,15 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
 // new endpoint for marking reminders as addressed
 router.patch("/:reminderId/address", verifyFirebaseToken, async (req, res) => {
   const { reminderId } = req.params;
-  
+
   await prisma.reminder.update({
     where: { id: reminderId },
-    data: { 
+    data: {
       addressedAt: new Date(),
-      isActive: false // deactivate when addressed
-    }
+      isActive: false, // deactivate when addressed
+    },
   });
-  
+
   res.json({ success: true });
 });
 

@@ -8,12 +8,17 @@ async function getUserPlaidToken(userId) {
     where: { id: userId },
     select: { plaidAccessToken: true },
   });
-  
+
   return user?.plaidAccessToken || null;
 }
 
 // Fetch transactions from Plaid with error handling
-async function fetchPlaidTransactions(accessToken, startDate, endDate, count = 499) {
+async function fetchPlaidTransactions(
+  accessToken,
+  startDate,
+  endDate,
+  count = 499
+) {
   try {
     const response = await plaidClient.transactionsGet({
       access_token: accessToken,
@@ -21,7 +26,7 @@ async function fetchPlaidTransactions(accessToken, startDate, endDate, count = 4
       end_date: endDate.toISOString().split("T")[0],
       options: { count },
     });
-    
+
     return response.data.transactions;
   } catch (error) {
     console.error("Error fetching Plaid transactions:", error);
@@ -33,11 +38,6 @@ async function fetchPlaidTransactions(accessToken, startDate, endDate, count = 4
 function calculateTotalSpent(transactions) {
   return transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 }
-
-
-
-
-
 
 module.exports = {
   getUserPlaidToken,
