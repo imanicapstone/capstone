@@ -39,24 +39,24 @@ const BudgetForm = ({ userId, onBudgetCreated, currentUser }) => {
   return (
     <Card className="max-w-md mx-auto mb-6">
       <CardHeader>
-        <CardTitle>Set Weekly Budget</CardTitle>
+        <CardTitle>Set Monthly Budget</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="amount">Weekly Budget Amount ($)</Label>
+            <Label htmlFor="amount">Monthly Budget Amount ($)</Label>
             <Input
               name="amount"
               id="amount"
               type="number"
               value={form.amount}
               onChange={handleChange}
-              placeholder="500"
+              placeholder="2000"
               required
             />
           </div>
           <Button type="submit" className="w-full bg-[#ceb8db]">
-            Set Weekly Budget
+            Set Monthly Budget
           </Button>
         </form>
       </CardContent>

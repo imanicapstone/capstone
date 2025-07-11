@@ -365,7 +365,7 @@ user.get("/goal/:id", authenticate, async (req, res) => {
   }
 });
 
-// create weekly budgets
+// create monthly budgets
 user.post("/budget", authenticate, async (req, res) => {
   const { userId, amount } = req.body;
 
@@ -374,18 +374,17 @@ user.post("/budget", authenticate, async (req, res) => {
   }
 
   try {
-    // get start of current week
+    // get start of current month
     const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    weekStart.setHours(0, 0, 0, 0);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
 
-    // check if budget already exists for the week
+    // check if budget already exists for the month
     const existingBudget = await prisma.budget.findFirst({
       where: {
         userId,
-        weekStart: {
-          equals: weekStart,
+        monthStart: {
+          equals: monthStart,
         },
       },
     });
@@ -402,7 +401,7 @@ user.post("/budget", authenticate, async (req, res) => {
       data: {
         userId,
         amount: parseFloat(amount),
-        weekStart,
+        monthStart,
       },
     });
 
@@ -419,21 +418,20 @@ user.get("/budget/:id", authenticate, async (req, res) => {
 
   try {
     const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    weekStart.setHours(0, 0, 0, 0);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
 
     const budget = await prisma.budget.findFirst({
       where: {
         userId,
-        weekStart: {
-          equals: weekStart,
+        monthStart: {
+          equals: monthStart,
         },
       },
     });
 
     if (!budget) {
-      return res.status(404).json({ error: "No budget found for this week" });
+      return res.status(404).json({ error: "No budget found for this month" });
     }
 
     res.json(budget);
