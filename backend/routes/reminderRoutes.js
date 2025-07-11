@@ -6,6 +6,7 @@ const verifyFirebaseToken = require("../middleware/auth");
 const budgetReminder = require("../reminders/budgetReminder");
 const purchaseReminder = require("../reminders/purchaseReminder");
 const offTrackReminder = require("../reminders/offTrackReminder");
+const secondaryReminder = require("../reminders/secondaryReminder");
 
 router.get("/:userId", verifyFirebaseToken, async (req, res) => {
   try {
@@ -30,6 +31,12 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
       console.error("Off-track reminder error (non-fatal)", offTrackError);
     }
 
+    try {
+  await secondaryReminder(userId);
+} catch (secondaryError) {
+  console.error("Secondary reminder error (non-fatal):", secondaryError);
+}
+
     // Fetch reminders
     const reminders = await prisma.reminder.findMany({
       where: {
@@ -52,6 +59,21 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
       details: error.message,
     });
   }
+});
+
+// new endpoint for marking reminders as addressed
+router.patch("/:reminderId/address", verifyFirebaseToken, async (req, res) => {
+  const { reminderId } = req.params;
+  
+  await prisma.reminder.update({
+    where: { id: reminderId },
+    data: { 
+      addressedAt: new Date(),
+      isActive: false // deactivate when addressed
+    }
+  });
+  
+  res.json({ success: true });
 });
 
 module.exports = router;
