@@ -1,12 +1,10 @@
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
+const { monthStart, monthEnd } = require('./monthutils');
 
 module.exports = async function budgetReminder(userId) {
   const currentMonth = new Date();
-
-  const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-  const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
   const budget = await prisma.budget.findFirst({
     where: {

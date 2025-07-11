@@ -23,7 +23,7 @@ user.post("/", authenticate, async (req, res) => {
       create: {
         id,
         email,
-        namme: name || null,
+        name: name || null,
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       },
     });
