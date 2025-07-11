@@ -55,15 +55,18 @@ model Budget {
 }
 
 model Reminder {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String
-  title     String
-  message   String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+  id                        String   @id @default(cuid())
+  userId                    String
+  type                      String
+  title                     String
+  message                   String
+  isActive                  Boolean  @default(true)
+  addressedAt               DateTime?
+  lastSecondaryReminderAt   DateTime?
+  relatedReminderId         String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  user                      User     @relation(fields: [userId], references: [id])
 }
 
 model FinancialGoal {
@@ -81,11 +84,11 @@ model FinancialGoal {
 }
 
 model AvoidedMerchant {
-  id        String   @id @default(cuid())
-  userId    String
+  id           String   @id @default(cuid())
+  userId       String
   merchantName String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
   
   @@unique([userId, merchantName])
 }
