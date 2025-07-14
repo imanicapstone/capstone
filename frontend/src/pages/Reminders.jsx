@@ -13,13 +13,40 @@ import Navbar from "../components/Navbar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
-import { API_BASE_URL } from '../constants';
+import { API_BASE_URL } from "../constants";
 
 const Reminders = () => {
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { currentUser } = useAuth();
+
+  const handleAddressReminder = async (reminderId) => {
+    try {
+      const token = await currentUser.getIdToken();
+      const response = await fetch(
+        `${API_BASE_URL}/reminders/${reminderId}/address`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to address reminder: ${response.status}`);
+      }
+
+      // removes the addressed reminder
+      setReminders((prev) =>
+        prev.filter((reminder) => reminder.id !== reminderId)
+      );
+    } catch (err) {
+      console.error("Error addressing reminder:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -44,7 +71,6 @@ const Reminders = () => {
             },
           }
         );
-
 
         if (!response.ok) {
           const errorData = await response.text();
@@ -137,6 +163,12 @@ const Reminders = () => {
                 {new Date(reminder.createdAt).toLocaleDateString()} -{" "}
                 {reminder.type}
               </p>
+              <button
+                onClick={() => handleAddressReminder(reminder.id)}
+                className="ml-4 mt-3 px-4 py-2 bg-purple-300 text-white rounded  transition-colors"
+              >
+                Check off Reminder
+              </button>
             </li>
           )
         )}

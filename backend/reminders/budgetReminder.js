@@ -1,7 +1,12 @@
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
-const { monthStart, monthEnd } = require('./monthutils');
+const { monthStart, monthEnd } = require("./monthutils");
+const {
+  getUserPlaidToken,
+  fetchPlaidTransactions,
+  calculateTotalSpent,
+} = require("./reminderUtils");
 
 module.exports = async function budgetReminder(userId) {
   const currentMonth = new Date();
@@ -15,39 +20,21 @@ module.exports = async function budgetReminder(userId) {
     },
   });
 
-
   if (!budget) {
     return;
   }
 
   // Get user's Plaid access token
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { plaidAccessToken: true },
-  });
-
-  if (!user?.plaidAccessToken) {
-    return;
-  }
+  const accessToken = await getUserPlaidToken(userId);
+  if (!accessToken) return;
 
   // Get transactions from Plaid for the current week
-  let transactions = [];
-  try {
-    const response = await plaidClient.transactionsGet({
-      access_token: user.plaidAccessToken,
-      start_date: monthStart.toISOString().split("T")[0],
-      end_date: monthEnd.toISOString().split("T")[0],
-      options: { count: 499 },
-    });
-
-    transactions = response.data.transactions;
-  } catch (error) {
-    console.error("Error fetching Plaid transactions:", error);
-    return;
-  }
-
-  const totalSpent = transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0); // absolute value because plaid transactions are negative
-
+  const transactions = await fetchPlaidTransactions(
+    accessToken,
+    monthStart,
+    monthEnd
+  );
+  const totalSpent = calculateTotalSpent(transactions);
 
   // checks if reminder already exists
   const existing = await prisma.reminder.findFirst({
@@ -62,7 +49,10 @@ module.exports = async function budgetReminder(userId) {
     },
   });
 
-  const monthName = monthStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthName = monthStart.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   if (totalSpent > budget.amount && !existing) {
     await prisma.reminder.create({
@@ -70,7 +60,11 @@ module.exports = async function budgetReminder(userId) {
         userId,
         type: "SPENDING_OVER_BUDGET",
         title: "Be careful! you spent over your budget this month.",
-        message: `You spent $${totalSpent.toFixed(2)} in ${monthName}, which exceeded your budget of $${budget.amount.toFixed(2)}.`,
+        message: `You spent $${totalSpent.toFixed(
+          2
+        )} in ${monthName}, which exceeded your budget of $${budget.amount.toFixed(
+          2
+        )}.`,
         isActive: true,
       },
     });

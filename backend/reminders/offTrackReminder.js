@@ -1,8 +1,13 @@
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
-const { transactionCount, budgetOverMultiplier } = require('./config');
-const { monthStart, monthEnd } = require('./monthutils');
+const { transactionCount, budgetOverMultiplier } = require("./config");
+const { monthStart, monthEnd } = require("./monthutils");
+const {
+  getUserPlaidToken,
+  fetchPlaidTransactions,
+  calculateTotalSpent,
+} = require("./reminderUtils");
 
 module.exports = async function offTrackReminder(userId) {
   const currentMonth = new Date();
@@ -34,34 +39,15 @@ module.exports = async function offTrackReminder(userId) {
     return;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { plaidAccessToken: true },
-  });
+  const accessToken = await getUserPlaidToken(userId);
+  if (!accessToken) return;
 
-  if (!user?.plaidAccessToken) {
-    return;
-  }
-
-  let transactions = [];
-  try {
-    const response = await plaidClient.transactionsGet({
-      access_token: user.plaidAccessToken,
-      start_date: monthStart.toISOString().split("T")[0],
-      end_date: monthEnd.toISOString().split("T")[0],
-      options: { count: transactionCount },
-    });
-
-    transactions = response.data.transactions;
-  } catch (error) {
-    console.error("Error fetching Plaid transactions:", error);
-    return;
-  }
-
-  const totalSpent = transactions.reduce(
-    (sum, tx) => sum + Math.abs(tx.amount),
-    0
-  ); // absolute value for negative transaction
+  const transactions = await fetchPlaidTransactions(
+    accessToken,
+    monthStart,
+    monthEnd
+  );
+  const totalSpent = calculateTotalSpent(transactions);
 
   // check if totalPercent is proportional to monthPercent (with a slight buffer)
 
