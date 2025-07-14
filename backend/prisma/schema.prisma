@@ -20,6 +20,7 @@ model User {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   bankConnected    Boolean         @default(false)
+  remindersEnabled Boolean         @default(true)
   plaidAccessToken String?
   plaidItemId      String?
   budgets          Budget[]
