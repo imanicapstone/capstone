@@ -9,6 +9,7 @@ import "./App.css";
 import RecentTransactions from "./components/RecentTransactions.jsx";
 import Reminders from "./pages/Reminders.jsx";
 import Settings from './pages/Settings';
+import Expenses from './pages/Expenses';
 import { useAuth } from "./context/AuthContext";
 
 
@@ -24,6 +25,8 @@ const App = () => {
       <Route path={`/user/${userId}/reminders`} element={<Reminders />} />
       <Route path={`/user/${userId}/transactions`} element={<RecentTransactions />} />
       <Route path={`/user/${userId}/settings`} element={<Settings />} />
+      <Route path={`/user/${userId}/expenses`} element={<Expenses />} />
+
     </Routes>
   );
 };

@@ -32,6 +32,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: `/user/${userId}/reminders`, label: "Reminders" },
     { path: `/user/${userId}/transactions`, label: "Transactions" },
     { path: `/user/${userId}/settings`, label: "Settings" },
+    { path: `/user/${userId}/expenses`, label: "Expenses" },
+
   ];
 
   const handleNavigation = (path) => {
