@@ -1,16 +1,34 @@
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = useAuth();
+  const { logout } = useAuth();
+  const [error, setError] = useState("");
+
+  const handleSignOut = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const userSignOut = await logout(auth);
+      navigate("/user");
+    } catch (error) {
+      console.error(error);
+      setError(error.message || "Logout Failed");
+    }
+  };
 
   const links = [
     { path: `/user/:id`, label: "Dashboard" },
     { path: `/user/:id/goals`, label: "Goals" },
-    { path: `/user/:id/reminders`, label: "Reminders"},
-    { path: `/user/:id/transactions`, label: "Transactions"},
-    { path: `/user/:id/settings`, label: "Settings"}
+    { path: `/user/:id/reminders`, label: "Reminders" },
+    { path: `/user/:id/transactions`, label: "Transactions" },
+    { path: `/user/:id/settings`, label: "Settings" },
   ];
 
   const handleNavigation = (path) => {
@@ -42,6 +60,10 @@ const Sidebar = ({ isOpen, onClose }) => {
       </div>
       <button onClick={onClose} className="mt-8 px-4 py-2 rounded">
         Close Sidebar
+      </button>
+
+      <button onClick={handleSignOut} className="mt-4 px-4 py-2 rounded">
+        Sign Out
       </button>
     </div>
   );

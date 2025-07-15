@@ -129,7 +129,7 @@ const Register = () => {
             className="w-full py-3 bg-btngreen text-white font-semibold rounded-lg shadow-md hover:bg-btngreen/90 transition mt-10 "
             style={{ backgroundColor: "#a0bd87" }}
           >
-            Create Account
+            Create Account and Login
           </button>
 
           <h3
