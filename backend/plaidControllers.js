@@ -2,6 +2,7 @@ const plaidClient = require("./plaidClient");
 const { PrismaClient } = require("./generated/prisma");
 const prisma = new PrismaClient();
 const firebase = require("./middleware/auth");
+const { categorizeTransaction } = require("./expenses/merchantCategories");
 
 exports.createLinktoken = async (req, res) => {
   const firebaseUid = req.user?.uid || "fallback-id"; // firebase middleware
@@ -104,7 +105,59 @@ exports.getTransactions = async (req, res) => {
       merchant: tx.merchant_name || tx.name || "Unknown Merchant", // Use merchant_name, fallback to name, then default
     }));
 
-    res.json(transactions);
+    const processedTransactions = [];
+    // process each transaction
+    for (const tx of transactions) {
+      const merchantName = tx.merchant;
+
+      const category = await categorizeTransaction(merchantName, firebaseUid);
+
+      // transaction exists in database
+      const existingTransaction = await prisma.transaction.findFirst({
+        where: {
+          userId: firebaseUid,
+          // identify unique transactions
+          amount: tx.amount,
+          date: new Date(tx.date),
+          description: tx.name,
+        },
+      });
+
+      // if transaction doesnt exist, save to database
+      if (!existingTransaction) {
+        const savedTransaction = await prisma.transaction.create({
+          data: {
+            userId: firebaseUid,
+            amount: tx.amount,
+            type: tx.amount > 0 ? "income" : "expense",
+            category: category.name,
+            description: tx.name,
+            date: new Date(tx.date),
+          },
+        });
+
+        processedTransactions.push({
+          id: savedTransaction.id,
+          name: tx.name,
+          amount: tx.amount,
+          date: tx.date,
+          merchant: merchantName,
+          category: category.name,
+        });
+      } else {
+        // use existing transaction with category including now
+        processedTransactions.push({
+          id: existingTransaction.id,
+          name: tx.name,
+          amount: tx.amount,
+          date: tx.date,
+          merchant: merchantName,
+          category: category.name,
+        });
+      }
+    }
+
+    res.json(processedTransactions);
   } catch (error) {
     console.error("Error fetching transactions:", error);
     res.status(500).json({ error: "Failed to fetch transactions" });

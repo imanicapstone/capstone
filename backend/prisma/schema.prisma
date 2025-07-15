@@ -27,6 +27,8 @@ model User {
   reminders        Reminder[]
   transactions     Transaction[]
   avoidedMerchants AvoidedMerchant[]
+  merchants        MerchantCategory[]
+  categories       Category[]
 }
 
 model Transaction {
@@ -91,4 +93,24 @@ model AvoidedMerchant {
   user         User     @relation(fields: [userId], references: [id])
   
   @@unique([userId, merchantName])
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  name         String
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  merchants    MerchantCategory[]
+}
+
+model MerchantCategory {
+  id                 String   @id @default(cuid())
+  merchantName       String
+  normalized         String
+  categoryId         String
+  userId             String
+  lastUsed           DateTime @default(now())
+
+  category           Category @relation(fields: [categoryId], references: [id])
+  user               User     @relation(fields: [userId], references: [id])
 }
