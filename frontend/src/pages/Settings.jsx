@@ -16,11 +16,30 @@ const Settings = () => {
   const [newMerchant, setNewMerchant] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
+
+  // get user and see if they have reminders enabled, allow for option to update this
+  const fetchReminderPreference = async () => {
+    try {
+      const token = await currentUser.getIdToken();
+      const response = await fetch(`${API_BASE_URL}/user/${currentUser.uid}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setRemindersEnabled(userData.remindersEnabled ?? true);
+      }
+    } catch (error) {
+      console.error("Error fetching reminder preference:", error);
+    }
+  };
 
   useEffect(() => {
     if (currentUser) {
       fetchCurrentBudget();
       fetchAvoidedMerchants();
+      fetchReminderPreference();
     }
   }, [currentUser]);
 
@@ -153,6 +172,37 @@ const Settings = () => {
     );
   }
 
+  const toggleReminders = async () => {
+    try {
+      const token = await currentUser.getIdToken();
+      const newValue = !remindersEnabled;
+
+      const response = await fetch(
+        `${API_BASE_URL}/reminders/${currentUser.uid}/preferences`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            remindersEnabled: newValue,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setRemindersEnabled(newValue);
+        setError(""); // Clear any existing errors
+      } else {
+        setError("Failed to update reminder preference");
+      }
+    } catch (error) {
+      setError("Failed to update reminder preference");
+      console.error("Error updating reminder preference:", error);
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -268,6 +318,25 @@ const Settings = () => {
                 </div>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Reminder Preferences</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Enable Reminders</Label>
+              </div>
+              <input
+                type="checkbox"
+                checked={remindersEnabled}
+                onChange={toggleReminders}
+                className="toggle-switch"
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
