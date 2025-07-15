@@ -83,8 +83,11 @@ const recentTransactions = () => {
                   {transactions.map((tx) => (
                     <li key={tx.id}>
                       {tx.date.slice(0, 10)} - {tx.name} - $
-                      {tx.amount.toFixed(2)} - {tx.merchant} - <br></br>{" "}
-                      <br></br>
+                      {tx.amount.toFixed(2)} - {tx.merchant} -{" "}
+                      <span className="font-bold ml-2">
+                        {tx.category || "Uncategorized"}
+                      </span>
+                      <br></br> <br></br>
                     </li>
                   ))}
                 </ul>
