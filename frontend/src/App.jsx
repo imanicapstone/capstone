@@ -9,18 +9,21 @@ import "./App.css";
 import RecentTransactions from "./components/RecentTransactions.jsx";
 import Reminders from "./pages/Reminders.jsx";
 import Settings from './pages/Settings';
+import { useAuth } from "./context/AuthContext";
 
 
 const App = () => {
+  const { currentUser } = useAuth();
+  const userId = currentUser ? currentUser.uid : "";
   return (
     <Routes>
       <Route path="/" element={<Register />} />
-      <Route path="/user/:id" element={<Dashboard />} />
-      <Route path="/user" element={<Login />} />
-      <Route path="/user/:id/goals" element={<GoalsPage />} />
-      <Route path="/user/:id/reminders" element={<Reminders />} />
-      <Route path="/user/:id/transactions" element={<RecentTransactions />} />
-      <Route path="/user/:id/settings" element={<Settings />} />
+      <Route path={`/user/${userId}`} element={<Dashboard />} />
+      <Route path="/user/login" element={<Login />} />
+      <Route path={`/user/goals/${userId}`} element={<GoalsPage />} />
+      <Route path={`/user/${userId}/reminders`} element={<Reminders />} />
+      <Route path={`/user/${userId}/transactions`} element={<RecentTransactions />} />
+      <Route path={`/user/${userId}/settings`} element={<Settings />} />
     </Routes>
   );
 };

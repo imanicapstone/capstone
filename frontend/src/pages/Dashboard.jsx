@@ -19,13 +19,15 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const handleTransactionClick = () => {
-    navigate("/user/:id/transactions");
+  const location = useLocation();
+  const userId = location.pathname.split('/')[2]; // Extract user ID from URL
 
+  const handleTransactionClick = () => {
+    navigate(`/transactions/${userId}`);
   };
 
   const handleRemindersClick = () => {
-    navigate("/user/:id/reminders")
+    navigate(`/reminders/${userId}`);
   }
 
   return (

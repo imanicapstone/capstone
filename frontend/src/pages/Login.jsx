@@ -18,8 +18,7 @@ const Login = () => {
     try {
       const userCredential = await login(email, password);
       const userId = userCredential.user.uid;
-      // navigate('/user/:id');
-      navigate("/user/:id");
+      navigate(`/user/${userId}`);
     } catch (error) {
       console.error(error);
       setError(error.message || "Login failed");
