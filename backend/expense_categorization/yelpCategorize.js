@@ -20,7 +20,6 @@ async function getYelpCategory(businessName, location = "San Francisco, CA") {
     const business = response.data.businesses[0];
 
     if (!business) {
-      console.log(`No results found`);
       return null;
     }
 

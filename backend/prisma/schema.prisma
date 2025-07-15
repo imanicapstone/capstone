@@ -27,8 +27,8 @@ model User {
   reminders        Reminder[]
   transactions     Transaction[]
   avoidedMerchants AvoidedMerchant[]
-  merchants        MerchantCategory[]
-  categories       Category[]
+  merchants        YelpCategory[]
+  categories       PersonalCategory[]
 }
 
 model Transaction {
@@ -95,15 +95,15 @@ model AvoidedMerchant {
   @@unique([userId, merchantName])
 }
 
-model Category {
+model PersonalCategory {
   id           String   @id @default(cuid())
   name         String
   userId       String
   user         User     @relation(fields: [userId], references: [id])
-  merchants    MerchantCategory[]
+  merchants    YelpCategory[]
 }
 
-model MerchantCategory {
+model YelpCategory {
   id                 String   @id @default(cuid())
   merchantName       String
   normalized         String
@@ -111,6 +111,6 @@ model MerchantCategory {
   userId             String
   lastUsed           DateTime @default(now())
 
-  category           Category @relation(fields: [categoryId], references: [id])
+  category           PersonalCategory @relation(fields: [categoryId], references: [id])
   user               User     @relation(fields: [userId], references: [id])
 }

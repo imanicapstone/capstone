@@ -2,7 +2,7 @@ const plaidClient = require("./plaidClient");
 const { PrismaClient } = require("./generated/prisma");
 const prisma = new PrismaClient();
 const firebase = require("./middleware/auth");
-const { categorizeTransaction } = require("./expenses/merchantCategories");
+const { categorizeTransaction } = require("./expense_categorization/merchantCategories");
 
 exports.createLinktoken = async (req, res) => {
   const firebaseUid = req.user?.uid || "fallback-id"; // firebase middleware

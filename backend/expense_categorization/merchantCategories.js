@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function categorizeTransaction(merchantName, userId) {
   // check if this merchant is already categorized
-  const existingMerchant = await prisma.merchantCategory.findFirst({
+  const existingMerchant = await prisma.YelpCategory.findFirst({
     where: {
       merchantName: merchantName,
       userId: userId,
@@ -14,7 +14,7 @@ async function categorizeTransaction(merchantName, userId) {
 
   if (existingMerchant) {
     // update lastUsed timestamp
-    await prisma.merchantCategory.update({
+    await prisma.YelpCategory.update({
       where: { id: existingMerchant.id },
       data: { lastUsed: new Date() },
     });
@@ -31,10 +31,9 @@ async function categorizeTransaction(merchantName, userId) {
     !yelpData.yelp_categories ||
     yelpData.yelp_categories.length === 0
   ) {
-    console.log(`No Yelp categories found for ${merchantName}`);
     // uncategorized for merchants that didnt fit into either one
     const uncategorized = await getOrCreateCategory("Uncategorized", userId);
-    await createMerchantCategory(merchantName, uncategorized.id, userId);
+    await createYelpCategory(merchantName, uncategorized.id, userId);
     return uncategorized;
   }
 
@@ -43,12 +42,12 @@ async function categorizeTransaction(merchantName, userId) {
   const category = await getOrCreateCategory(primaryCategory, userId);
 
   // merchant category association
-  await createMerchantCategory(merchantName, category.id, userId);
+  await createYelpCategory(merchantName, category.id, userId);
   return category;
 }
 // gets or creates a category
 async function getOrCreateCategory(categoryName, userId) {
-  const existingCategory = await prisma.category.findFirst({
+  const existingCategory = await prisma.PersonalCategory.findFirst({
     where: {
       name: categoryName,
       userId: userId,
@@ -59,7 +58,7 @@ async function getOrCreateCategory(categoryName, userId) {
     return existingCategory;
   }
 
-  return await prisma.category.create({
+  return await prisma.PersonalCategory.create({
     data: {
       name: categoryName,
       userId: userId,
@@ -67,8 +66,8 @@ async function getOrCreateCategory(categoryName, userId) {
   });
 }
 // create merchant category association
-async function createMerchantCategory(merchantName, categoryId, userId) {
-  return await prisma.merchantCategory.create({
+async function createYelpCategory(merchantName, categoryId, userId) {
+  return await prisma.YelpCategory.create({
     data: {
       merchantName: merchantName,
       // normalized names for name matching 
