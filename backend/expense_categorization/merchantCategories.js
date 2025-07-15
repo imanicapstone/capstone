@@ -7,7 +7,6 @@ async function categorizeTransaction(merchantName, userId) {
   const existingMerchant = await prisma.YelpCategory.findFirst({
     where: {
       merchantName: merchantName,
-      userId: userId,
     },
     include: { category: true },
   });
@@ -45,7 +44,7 @@ async function categorizeTransaction(merchantName, userId) {
   await createYelpCategory(merchantName, category.id, userId);
   return category;
 }
-// gets or creates a category
+// gets or creates a category that the user is able to edit
 async function getOrCreateCategory(categoryName, userId) {
   const existingCategory = await prisma.PersonalCategory.findFirst({
     where: {
@@ -65,7 +64,8 @@ async function getOrCreateCategory(categoryName, userId) {
     },
   });
 }
-// create merchant category association
+// create merchant category association, user is not able to edit yelp categories,
+// as these are sitewide.
 async function createYelpCategory(merchantName, categoryId, userId) {
   return await prisma.YelpCategory.create({
     data: {

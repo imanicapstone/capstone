@@ -28,7 +28,6 @@ model User {
   reminders        Reminder[]
   transactions     Transaction[]
   avoidedMerchants AvoidedMerchant[]
-  merchants        YelpCategory[]
   categories       PersonalCategory[]
 }
 
@@ -109,9 +108,7 @@ model YelpCategory {
   merchantName       String
   normalized         String
   categoryId         String
-  userId             String
   lastUsed           DateTime @default(now())
 
   category           PersonalCategory @relation(fields: [categoryId], references: [id])
-  user               User     @relation(fields: [userId], references: [id])
 }
