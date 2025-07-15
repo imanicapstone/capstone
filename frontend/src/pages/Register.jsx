@@ -45,8 +45,8 @@ const Register = () => {
         throw new Error(errorData.error || "Failed to store user data");
       }
 
-      // navigates to login page
-      navigate("/user/:id");
+      // navigates to dashboard page with actual user ID
+      navigate(`/dashboard/${firebaseUID}`);
     } catch (error) {
       console.error(error);
       setError(error.message || "Account Creation Failed");
@@ -55,7 +55,7 @@ const Register = () => {
 
   const handleExistingUser = async () => {
     try {
-      navigate("/user");
+      navigate("/user/login");
     } catch (error) {
       console.error(error);
       setError("Redirect Failed");

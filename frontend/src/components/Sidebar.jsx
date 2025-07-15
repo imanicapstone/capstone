@@ -16,19 +16,22 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     try {
       const userSignOut = await logout(auth);
-      navigate("/user");
+      navigate("/login");
     } catch (error) {
       console.error(error);
       setError(error.message || "Logout Failed");
     }
   };
 
+  const { currentUser } = useAuth();
+  const userId = currentUser ? currentUser.uid : "";
+
   const links = [
-    { path: `/user/:id`, label: "Dashboard" },
-    { path: `/user/:id/goals`, label: "Goals" },
-    { path: `/user/:id/reminders`, label: "Reminders" },
-    { path: `/user/:id/transactions`, label: "Transactions" },
-    { path: `/user/:id/settings`, label: "Settings" },
+    { path: `/user/${userId}`, label: "Dashboard" },
+    { path: `/user/goals/${userId}`, label: "Goals" },
+    { path: `/user/${userId}/reminders`, label: "Reminders" },
+    { path: `/user/${userId}/transactions`, label: "Transactions" },
+    { path: `/user/${userId}/settings`, label: "Settings" },
   ];
 
   const handleNavigation = (path) => {
