@@ -26,6 +26,7 @@ const App = () => {
       <Route path={`/user/${userId}/transactions`} element={<RecentTransactions />} />
       <Route path={`/user/${userId}/settings`} element={<Settings />} />
       <Route path={`/user/${userId}/expenses`} element={<Expenses />} />
+
     </Routes>
   );
 };
