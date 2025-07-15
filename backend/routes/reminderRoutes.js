@@ -12,7 +12,22 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Run budget reminder check to populate new reminders
+    // checks if user has reminders enabled
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { remindersEnabled: true },
+    });
+
+    // if user doesnt have reminders enabled, send empty response
+    if (!user?.remindersEnabled) {
+      return res.status(200).json({
+        success: true,
+        reminders: [],
+        remindersEnabled: false,
+        message: "Reminders are currently disabled",
+      });
+    }
+
     try {
       await budgetReminder(userId);
     } catch (budgetError) {
@@ -77,3 +92,27 @@ router.patch("/:reminderId/address", verifyFirebaseToken, async (req, res) => {
 });
 
 module.exports = router;
+
+router.patch("/:userId/preferences", verifyFirebaseToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { remindersEnabled } = req.body;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { remindersEnabled },
+    });
+
+    res.json({
+      success: true,
+      remindersEnabled,
+    });
+  } catch (error) {
+    console.error("Error updating reminder preferences:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update reminder preferences",
+      details: error.message,
+    });
+  }
+});

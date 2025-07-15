@@ -20,6 +20,8 @@ const Reminders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { currentUser } = useAuth();
+  const [message, setMessage] = useState("");
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
 
   const handleAddressReminder = async (reminderId) => {
     try {
@@ -79,6 +81,10 @@ const Reminders = () => {
 
         const data = await response.json();
         setReminders(data.reminders || []);
+        setRemindersEnabled(data.remindersEnabled ?? true); // checks if user has reminders on
+        if (!data.remindersEnabled) {
+            setMessage("Reminders are currently disabled")
+        }
       } catch (err) {
         console.error("Error fetching reminders:", err);
         setError(err.message);
