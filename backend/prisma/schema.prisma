@@ -108,6 +108,7 @@ model YelpCategory {
   merchantName       String
   normalized         String
   categoryId         String
+  confidenceScore    Float @default(1.0)
   lastUsed           DateTime @default(now())
 
   category           PersonalCategory @relation(fields: [categoryId], references: [id])

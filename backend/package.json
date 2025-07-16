@@ -22,7 +22,9 @@
     "firebase-admin": "^13.4.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "plaid": "^36.0.0"
+    "plaid": "^36.0.0",
+    "string-similarity": "^4.0.4",
+    "string-similarity-js": "^2.1.4"
   },
   "devDependencies": {
     "prisma": "^6.10.1"

@@ -22,7 +22,6 @@ async function getYelpCategory(businessName, location = "San Francisco, CA") {
     if (!business) {
       return null;
     }
-
     const categoryLabels = business.categories.map((c) => c.title);
 
     return {

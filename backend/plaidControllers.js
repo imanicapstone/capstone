@@ -2,7 +2,9 @@ const plaidClient = require("./plaidClient");
 const { PrismaClient } = require("./generated/prisma");
 const prisma = new PrismaClient();
 const firebase = require("./middleware/auth");
-const { categorizeTransaction } = require("./expense_categorization/merchantCategories");
+const {
+  categorizeTransaction,
+} = require("./expense_categorization/merchantCategories");
 
 exports.createLinktoken = async (req, res) => {
   const firebaseUid = req.user?.uid || "fallback-id"; // firebase middleware
@@ -109,8 +111,8 @@ exports.getTransactions = async (req, res) => {
     // process each transaction
     for (const tx of transactions) {
       const merchantName = tx.merchant;
-
-      const category = await categorizeTransaction(merchantName, firebaseUid);
+      const result = await categorizeTransaction(merchantName, firebaseUid);
+      const category = result.category;
 
       // transaction exists in database
       const existingTransaction = await prisma.transaction.findFirst({
@@ -122,6 +124,8 @@ exports.getTransactions = async (req, res) => {
           description: tx.name,
         },
       });
+
+    
 
       // if transaction doesnt exist, save to database
       if (!existingTransaction) {
@@ -146,6 +150,7 @@ exports.getTransactions = async (req, res) => {
         });
       } else {
         // use existing transaction with category including now
+
         processedTransactions.push({
           id: existingTransaction.id,
           name: tx.name,
