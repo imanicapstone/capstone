@@ -1,8 +1,8 @@
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const {
-  findHighestConfidenceCategory,
-} = require("./merchantNameSynonymCategories");
+  findHighestConfidenceSynonymCategory,
+} = require("./yelpSynonymComparison");
 
 // directly retrieves yelp confidence scores
 exports.getMerchantConfidence = async (req, res) => {
@@ -10,7 +10,10 @@ exports.getMerchantConfidence = async (req, res) => {
   const userId = req.user.uid;
 
   try {
-    const result = await findHighestConfidenceCategory(merchantName, userId);
+    const result = await findHighestConfidenceSynonymCategory(
+      merchantName,
+      userId
+    );
 
     if (!result) {
       return res.status(404).json({ error: "Merchant not found" });

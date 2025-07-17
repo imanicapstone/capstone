@@ -94,4 +94,5 @@ async function createYelpCategory(merchantName, categoryId, confidence) {
 module.exports = {
   categorizeTransaction,
   getOrCreateCategory,
+  createYelpCategory,
 };
