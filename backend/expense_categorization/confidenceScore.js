@@ -1,4 +1,11 @@
-// calculate similarity between business name string and yelp category string
+/**
+ * calculates a confidence score (0-100) indicating how closely a given merchant name
+ * matches a Yelp business entry. The score is based on:
+ *  - String similarity between the merchant name and Yelp business name (up to 50 points)
+ *  - Specificity of Yelp categories (up to 50 points, fewer categories produce a higher score)
+ */
+
+
 
 const stringSimilarity = require("string-similarity");
 

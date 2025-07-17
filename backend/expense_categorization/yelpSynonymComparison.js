@@ -8,6 +8,16 @@ const {
 } = require("./merchantCategories");
 const { synonymMatch } = require("./merchantNameSynonymCategories");
 
+/**
+ * finds the most appropriate category for a merchant by evaluating existing
+ * synonym matches and comparing their confidence scores with yelp category data.
+ *
+ * 1. attempts to find the highest confidence synonym from known merchant names
+ * 2. if found, compares it with yelp category data based on calculated confidence
+ * 3. associates merchant with the most confident category (either from synonym or yelp)
+ * 4. if no match is found, defaults to an "uncategorized" category
+ */
+
 async function findHighestConfidenceSynonymCategory(merchantName, userId) {
   const merchantSynonyms = await synonymMatch(merchantName);
 
