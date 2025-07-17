@@ -91,4 +91,7 @@ async function createYelpCategory(merchantName, categoryId, confidence) {
   });
 }
 
-module.exports = { categorizeTransaction };
+module.exports = {
+  categorizeTransaction,
+  getOrCreateCategory,
+};
