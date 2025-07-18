@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 const firebase = require("./middleware/auth");
 const {
   categorizeTransaction,
+  getOrCreateCategory
 } = require("./expense_categorization/merchantCategories");
 
 exports.createLinktoken = async (req, res) => {
@@ -126,8 +127,6 @@ exports.getTransactions = async (req, res) => {
         },
       });
 
-    
-
       // if transaction doesnt exist, save to database
       if (!existingTransaction) {
         const savedTransaction = await prisma.transaction.create({
@@ -169,5 +168,56 @@ exports.getTransactions = async (req, res) => {
   } catch (error) {
     console.error("Error fetching transactions:", error);
     res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+};
+
+exports.overrideTransactionCategory = async (req, res) => {
+  const { transactionId, categoryName } = req.body;
+  const userId = req.user.uid;
+
+  try {
+    // check if the category exists or create it
+    const category = await getOrCreateCategory(categoryName, userId);
+
+     // first try to find the transaction by id
+    let transaction = await prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId: userId,
+      },
+    });
+
+    // if transaction not found try to find it by other attributes
+    if (!transaction && req.body.amount && req.body.date && req.body.description) {
+      transaction = await prisma.transaction.findFirst({
+        where: {
+          userId: userId,
+          amount: parseFloat(req.body.amount),
+          date: new Date(req.body.date),
+          description: req.body.description,
+        },
+      });
+    }
+
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+
+    // update transaction with new category
+    const updatedTransaction = await prisma.transaction.update({
+      where: {
+        id: transaction.id,
+      },
+      data: {
+        category: categoryName,
+        userOverridden: true, // indicates override was manually set
+      },
+    });
+
+    res.json({ success: true, transaction: updatedTransaction });
+  } catch (error) {
+    console.error("Error overriding category:", error);
+    res.status(500).json({ error: "Failed to override category" });
   }
 };

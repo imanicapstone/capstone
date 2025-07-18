@@ -6,6 +6,7 @@ const {
   exchangePublicToken,
   getConnectionStatus,
   getTransactions,
+  overrideTransactionCategory,
 } = require("../plaidControllers");
 const {
   getMerchantConfidence,
@@ -19,6 +20,11 @@ router.get(
   "/merchant-confidence/:merchantName",
   verifyFirebaseToken,
   getMerchantConfidence
+);
+router.post(
+  "/override-category",
+  verifyFirebaseToken,
+  overrideTransactionCategory
 );
 
 module.exports = router;
