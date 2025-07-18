@@ -145,7 +145,7 @@ const recentTransactions = () => {
       <Navbar />
 
       <h2
-        className="text-4xl font-semibold text-center mb-24"
+        className="text-4xl font-semibold text-center mb-24 mt-10"
         style={{ color: "#6e6295" }}
       >
         {" "}
@@ -171,7 +171,7 @@ const recentTransactions = () => {
                         {tx.category || "Uncategorized"}
                       </span>
                       {merchantConfidenceScores[tx.merchant] !== undefined && (
-                        <span className="text-sm ml-2">
+                        <span className="text-m ml-4">
                           (Confidence: {merchantConfidenceScores[tx.merchant]}%)
                         </span>
                       )}

@@ -2,16 +2,25 @@ const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const { synonymMatch } = require("./merchantNameSynonymCategories");
 const { getOrCreateCategory } = require("./merchantCategories");
+const stringSimilarity = require("string-similarity");
 
 /**
- * finds the most appropriate category for a merchant based on synonym matching
+ * categorizes merchant based on known synonyms and string similarity
+ * with existing categories
  *
- * 1. attempts to find the highest confidence synonym from known merchant names
- * 2. if found, returns the category and confidence score associated with that synonym
- * 3. if no match is found, returns null or creates an uncategorized entry
+ * 1. checks for direct synonym matches in the database with confidence scores.
+ * 2. if no match is found, compares synonyms against the user's categories using
+ *    string similarity to determine match
+ *
  */
+
 async function categorizeBySynonym(merchantName, userId) {
   const merchantSynonyms = await synonymMatch(merchantName);
+
+  // gets all unique categories
+  const allCategories = await prisma.PersonalCategory.findMany({
+    where: { userId: userId },
+  });
 
   let highestConfidenceSynonym = null;
   let highestConfidenceScore = 0;
@@ -33,6 +42,31 @@ async function categorizeBySynonym(merchantName, userId) {
       highestConfidenceSynonym = synonym;
       highestConfidenceScore = existingSynonym.confidenceScore;
       highestConfidenceCategory = existingSynonym.category;
+    }
+  }
+
+  // if no match found, look for similar categories
+  if (!highestConfidenceCategory && allCategories.length > 0) {
+    for (const synonym of merchantSynonyms) {
+      // compare this synonym with all category names
+      for (const category of allCategories) {
+        if (category.name === "Uncategorized") continue;
+
+        // calculate similarity between synonym and category name
+        const similarity = stringSimilarity.compareTwoStrings(
+          synonym.toLowerCase(),
+          category.name.toLowerCase()
+        );
+
+        // converts similarity to confidence score
+        const confidenceScore = Math.round(similarity * 100);
+
+        if (similarity > 0.3 && confidenceScore > highestConfidenceScore) {
+          highestConfidenceSynonym = synonym;
+          highestConfidenceScore = confidenceScore;
+          highestConfidenceCategory = category;
+        }
+      }
     }
   }
 
