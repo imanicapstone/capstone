@@ -1,8 +1,7 @@
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
-const {
-  findHighestConfidenceSynonymCategory,
-} = require("./yelpSynonymComparison");
+const { categorizeTransaction } = require("./merchantCategories"); // yelp catgorization
+const { categorizeBySynonym } = require("./synonymCategorization"); // synonym categorization
 
 // directly retrieves yelp confidence scores
 exports.getMerchantConfidence = async (req, res) => {
@@ -10,20 +9,31 @@ exports.getMerchantConfidence = async (req, res) => {
   const userId = req.user.uid;
 
   try {
-    const result = await findHighestConfidenceSynonymCategory(
-      merchantName,
-      userId
-    );
+    // get results from both categorization methods
+    const yelpResult = await categorizeTransaction(merchantName, userId);
+    const synonymResult = await categorizeBySynonym(merchantName, userId);
 
-    if (!result) {
-      return res.status(404).json({ error: "Merchant not found" });
+    // compare confidence scores and choose the better one
+    let finalResult;
+    let method;
+
+    if (
+      synonymResult &&
+      synonymResult.confidenceScore > yelpResult.confidenceScore
+    ) {
+      finalResult = synonymResult;
+      method = "synonym";
+    } else {
+      finalResult = yelpResult;
+      method = "yelp";
     }
 
     return res.json({
-      merchantName: result.usedSynonym || merchantName,
-      confidenceScore: result.confidenceScore,
-      category: result.category.name,
-      usedSynonym: result.usedSynonym,
+      merchantName: finalResult.usedSynonym || merchantName,
+      confidenceScore: finalResult.confidenceScore,
+      category: finalResult.category.name,
+      usedSynonym: finalResult.usedSynonym,
+      method: method, // tells which method was used
     });
   } catch (error) {
     console.error("Error fetching merchant confidence:", error);
