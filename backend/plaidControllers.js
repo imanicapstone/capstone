@@ -125,8 +125,6 @@ exports.getTransactions = async (req, res) => {
         },
       });
 
-    
-
       // if transaction doesnt exist, save to database
       if (!existingTransaction) {
         const savedTransaction = await prisma.transaction.create({
@@ -166,5 +164,32 @@ exports.getTransactions = async (req, res) => {
   } catch (error) {
     console.error("Error fetching transactions:", error);
     res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+};
+
+exports.overrideTransactionCategory = async (req, res) => {
+  const { transactionId, categoryName } = req.body;
+  const userId = req.user.uid;
+
+  try {
+    // check if the category exists or create it
+    const category = await getOrCreateCategory(categoryName, userId);
+
+    // update transaction with new category
+    const updatedTransaction = await prisma.transaction.update({
+      where: {
+        id: transactionId,
+        userId: userId, //
+      },
+      data: {
+        category: categoryName,
+        userOverridden: true, // indicates this was manually set
+      },
+    });
+
+    res.json({ success: true, transaction: updatedTransaction });
+  } catch (error) {
+    console.error("Error overriding category:", error);
+    res.status(500).json({ error: "Failed to override category" });
   }
 };
