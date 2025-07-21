@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../context/AuthContext";
 
+
+
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,13 +51,20 @@ const Sidebar = ({ isOpen, onClose }) => {
       <h2 className="text-2xl font-bold mb-8">Fina</h2>
       <div className="flex flex-col space-y-4">
         {links.map(({ path, label }) => {
+          // if label matches secure links
+          const isSecureMode = ["Transactions", "Expenses", "Settings"].includes(label);
+
           return (
             <button
               key={path}
               onClick={() => handleNavigation(path)}
               className={cn(
-                "text-left px-4 py-2 rounded hover:bg-gray-200 transition",
+                "text-left px-4 py-2 rounded transition",
+                // if not secure link normal hover
+                !isSecureMode && "hover:bg-gray-200",
+                isSecureMode && "hover:cursor-lock",
                 location.pathname === path && "bg-gray-300 font-semibold"
+
               )}
             >
               {label}
