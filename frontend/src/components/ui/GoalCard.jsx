@@ -1,4 +1,5 @@
 import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const GoalCard = ({ goal }) => {
   const percent = Math.min(
@@ -6,12 +7,14 @@ const GoalCard = ({ goal }) => {
   );
 
   return (
-    <div className="goal-card">
-      <h3>{goal.title}</h3>
-      <p>{goal.description}</p>
-      <p>Target: {goal.targetAmount}</p>
-      <p>Current: ${goal.currentAmount}</p>
-    </div>
+    <Card className="mb-4 border-2 ">
+      <CardHeader>
+        <CardTitle style={{ color: "#6e6295" }}>{goal.title}</CardTitle>
+        {goal.description && (
+          <p className="text-sm text-gray-500">{goal.description}</p>
+        )}
+      </CardHeader>
+    </Card>
   );
 };
 
