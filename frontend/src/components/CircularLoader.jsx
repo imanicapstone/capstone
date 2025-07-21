@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 const CircularLoader = ({
   size = 100,
   strokeWidth = 18,
+  percentageSpent = 75,
 }) => {
   const [progress, setProgress] = useState(0);
 
