@@ -36,14 +36,36 @@ const Dashboard = () => {
     navigate(`/reminders/${userId}`);
   };
 
-  useEffect(() => {
-    const fetchTransactionsAndBudget = async () => {
-      if (!currentUser) return;
+  const fetchTransactionsAndBudget = async () => {
+    if (!currentUser) return;
 
-      try {
-        const token = await currentUser.getIdToken();
-        const transactionsResponse = await fetch(
-          `${API_BASE_URL}/plaid/transactions`,
+    try {
+      const token = await currentUser.getIdToken();
+      const transactionsResponse = await fetch(
+        `${API_BASE_URL}/plaid/transactions`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (transactionsResponse.ok) {
+        const transactionsData = await transactionsResponse.json();
+        setTransactions(transactionsData);
+
+        // total spent
+        const totalSpent = transactionsData.reduce(
+          (sum, transaction) =>
+            sum + (transaction.amount < 0 ? -transaction.amount : 0),
+          0
+        );
+
+        // fetch budget
+        const budgetResponse = await fetch(
+          `${API_BASE_URL}/user/budget/${currentUser.uid}`,
           {
             method: "GET",
             headers: {
@@ -53,43 +75,21 @@ const Dashboard = () => {
           }
         );
 
-        if (transactionsResponse.ok) {
-          const transactionsData = await transactionsResponse.json();
-          setTransactions(transactionsData);
+        if (budgetResponse.ok) {
+          const budgetData = await budgetResponse.json();
+          setBudget(budgetData.amount);
 
-          // total spent
-          const totalSpent = transactionsData.reduce(
-            (sum, transaction) =>
-              sum + (transaction.amount < 0 ? -transaction.amount : 0),
-            0
-          );
-
-          // fetch budget
-          const budgetResponse = await fetch(
-            `${API_BASE_URL}/user/budget/${currentUser.uid}`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (budgetResponse.ok) {
-            const budgetData = await budgetResponse.json();
-            setBudget(budgetData.amount);
-
-            // percentage spent
-            const percentage = (totalSpent / budgetData.amount) * 100;
-            setPercentageSpent(Math.min(percentage, 100)); // cap at 100
-          }
+          // percentage spent
+          const percentage = (totalSpent / budgetData.amount) * 100;
+          setPercentageSpent(Math.min(percentage, 100)); // cap at 100
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchTransactionsAndBudget();
   }, [currentUser]);
 
