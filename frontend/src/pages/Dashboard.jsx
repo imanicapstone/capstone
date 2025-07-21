@@ -23,11 +23,15 @@ const Dashboard = () => {
   const userId = location.pathname.split('/')[2]; // Extract user ID from URL
 
   const handleTransactionClick = () => {
-    navigate(`/transactions/${userId}`);
+    navigate(`/user/${userId}/transactions`);
   };
 
   const handleRemindersClick = () => {
-    navigate(`/reminders/${userId}`);
+    navigate(`/user/${userId}/reminders`);
+  }
+
+  const handleGoalsClick = () => {
+     navigate(`/user/goals/${userId}`);
   }
 
   return (
@@ -49,7 +53,8 @@ const Dashboard = () => {
         <div className="flex flex-col space-y-10 p-0 w-full max-w-[600px]">
           <Card className=" ml-0 w-[48vw] max-w-[600px] min-w-[280px] h-25 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300">
             <CardHeader>
-              <CardTitle className="text-gray-50 text-xl font-semibold">
+              <CardTitle className="text-gray-50 text-xl font-semibold"
+              onClick={handleGoalsClick}>
                 Goals
               </CardTitle>
             </CardHeader>
