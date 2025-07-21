@@ -14,25 +14,85 @@ import BankStatus from "../components/BankStatus";
 import Navbar from "../components/Navbar";
 import CircularLoader from "../components/CircularLoader";
 import { useNavigate, useLocation } from "react-router-dom";
+import { API_BASE_URL } from "../constants";
+import { useAuth } from "../context/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
   const location = useLocation();
-  const userId = location.pathname.split('/')[2]; // Extract user ID from URL
+  const userId = location.pathname.split("/")[2]; // Extract user ID from URL
+  const [transactions, setTransactions] = useState([]);
+  const [budget, setBudget] = useState(0);
+  const [percentageSpent, setPercentageSpent] = useState(0);
+  const { currentUser } = useAuth();
 
   const handleTransactionClick = () => {
     navigate(`/user/${userId}/transactions`);
   };
 
   const handleRemindersClick = () => {
-    navigate(`/user/${userId}/reminders`);
-  }
+    navigate(`/reminders/${userId}`);
+  };
 
-  const handleGoalsClick = () => {
-     navigate(`/user/goals/${userId}`);
-  }
+  const fetchTransactionsAndBudget = async () => {
+    if (!currentUser) return;
+
+    try {
+      const token = await currentUser.getIdToken();
+      const transactionsResponse = await fetch(
+        `${API_BASE_URL}/plaid/transactions`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (transactionsResponse.ok) {
+        const transactionsData = await transactionsResponse.json();
+        setTransactions(transactionsData);
+
+        // total spent
+        const totalSpent = transactionsData.reduce(
+          (sum, transaction) =>
+            sum + (transaction.amount < 0 ? -transaction.amount : 0),
+          0
+        );
+
+        // fetch budget
+        const budgetResponse = await fetch(
+          `${API_BASE_URL}/user/budget/${currentUser.uid}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (budgetResponse.ok) {
+          const budgetData = await budgetResponse.json();
+          setBudget(budgetData.amount);
+
+          // percentage spent
+          const percentage = (totalSpent / budgetData.amount) * 100;
+          setPercentageSpent(Math.min(percentage, 100)); // cap at 100
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactionsAndBudget();
+  }, [currentUser]);
+
 
   return (
     <div>
@@ -60,7 +120,8 @@ const Dashboard = () => {
             </CardHeader>
           </Card>
 
-          <Card className="w-[48vw] max-w-[600px] min-w-[280px] h-48 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
+          <Card
+            className="w-[48vw] max-w-[600px] min-w-[280px] h-48 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
             onClick={handleTransactionClick}
           >
             <CardHeader>
@@ -75,9 +136,11 @@ const Dashboard = () => {
             </CardFooter>
           </Card>
 
-          <Card className=" ml-0 w-[48vw] max-w-[600px] min-w-[280px] h-25 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
-          onClick={handleRemindersClick}>
-            <CardHeader >
+          <Card
+            className=" ml-0 w-[48vw] max-w-[600px] min-w-[280px] h-25 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300"
+            onClick={handleRemindersClick}
+          >
+            <CardHeader>
               <CardTitle className="text-gray-50 text-xl font-semibold">
                 Reminders
               </CardTitle>
@@ -87,7 +150,7 @@ const Dashboard = () => {
         </div>
 
         <div style={{ marginLeft: "40px" }}>
-          <CircularLoader size={300} percentageSpent={62} />
+          <CircularLoader size={300} percentageSpent={percentageSpent} />
         </div>
       </div>
     </div>
