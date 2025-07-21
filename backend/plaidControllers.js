@@ -114,6 +114,7 @@ exports.getTransactions = async (req, res) => {
       const merchantName = tx.merchant;
       const result = await categorizeTransaction(merchantName, firebaseUid);
       const category = result.category;
+      const confidenceScore = result.confidenceScore;
 
       // transaction exists in database
       const existingTransaction = await prisma.transaction.findFirst({
@@ -146,6 +147,7 @@ exports.getTransactions = async (req, res) => {
           date: tx.date,
           merchant: merchantName,
           category: category.name,
+          confidenceScore: confidenceScore
         });
       } else {
         // use existing transaction with category including now
@@ -157,6 +159,7 @@ exports.getTransactions = async (req, res) => {
           date: tx.date,
           merchant: merchantName,
           category: category.name,
+          confidenceScore: confidenceScore
         });
       }
     }
