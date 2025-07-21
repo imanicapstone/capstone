@@ -16,7 +16,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     try {
       const userSignOut = await logout(auth);
-      navigate("/login");
+      navigate("/user/login");
     } catch (error) {
       console.error(error);
       setError(error.message || "Logout Failed");
