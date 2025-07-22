@@ -7,6 +7,7 @@ const budgetReminder = require("../reminders/budgetReminder");
 const purchaseReminder = require("../reminders/purchaseReminder");
 const offTrackReminder = require("../reminders/offTrackReminder");
 const secondaryReminder = require("../reminders/secondaryReminder");
+const peakSpendingReminder = require("../reminders/peakSpendingReminder");
 
 router.get("/:userId", verifyFirebaseToken, async (req, res) => {
   try {
@@ -50,6 +51,12 @@ router.get("/:userId", verifyFirebaseToken, async (req, res) => {
       await secondaryReminder(userId);
     } catch (secondaryError) {
       console.error("Secondary reminder error (non-fatal):", secondaryError);
+    }
+
+    try {
+      await peakSpendingReminder(userId);
+    } catch (peakError) {
+      console.error("Peak spending reminder error (non-fatal)", peakError);
     }
 
     // Fetch reminders

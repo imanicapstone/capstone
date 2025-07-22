@@ -2,6 +2,7 @@ const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const { monthStart, monthEnd } = require("./monthutils");
+const { getWeekOfMonth } = require("./monthutils");
 const {
   getUserPlaidToken,
   fetchPlaidTransactions,
