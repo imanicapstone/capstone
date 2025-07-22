@@ -3,8 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../context/AuthContext";
 
-
-
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +33,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: `/user/${userId}/transactions`, label: "Transactions" },
     { path: `/user/${userId}/settings`, label: "Settings" },
     { path: `/user/${userId}/expenses`, label: "Expenses" },
-
   ];
 
   const handleNavigation = (path) => {
@@ -52,7 +49,11 @@ const Sidebar = ({ isOpen, onClose }) => {
       <div className="flex flex-col space-y-4">
         {links.map(({ path, label }) => {
           // if label matches secure links
-          const isSecureMode = ["Transactions", "Expenses", "Settings"].includes(label);
+          const isSecureMode = [
+            "Transactions",
+            "Expenses",
+            "Settings",
+          ].includes(label);
 
           return (
             <button
@@ -64,7 +65,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                 !isSecureMode && "hover:bg-gray-200",
                 isSecureMode && "hover:cursor-lock",
                 location.pathname === path && "bg-gray-300 font-semibold"
-
               )}
             >
               {label}
