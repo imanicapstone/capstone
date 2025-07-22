@@ -76,5 +76,4 @@ module.exports = async function peakWeekSpendingReminder(userId) {
       },
     });
   }
-  console.log(existingReminder);
 };
