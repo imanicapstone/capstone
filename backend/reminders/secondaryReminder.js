@@ -1,3 +1,12 @@
+/**
+ * Sends follow-up ("secondary") reminders for any unaddressed financial reminders older than 1 day.
+ *
+ * This function checks for unaddressed reminders of specific types that were created 
+ * more than a day ago and either haven't had a secondary reminder sent, or had one sent over a day ago.
+ * For each matching reminder it creates a new secondary reminder entry and updates the original
+ * reminder's lastSecondaryReminderAt field to prevent excessive follow-ups.
+ */
+
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 

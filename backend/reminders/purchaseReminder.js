@@ -1,3 +1,11 @@
+/**
+ * Sends a reminder if the user made a purchase from a merchant they intended to avoid.
+ *
+ * This function fetches the user's recent transactions from Plaid, compares them against a list
+ * of merchants the user wants to avoid, and creates a reminder if a match is found. It prevents
+ * duplicate reminders by checking if one already exists for the same merchant and transaction date.
+ */ 
+
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();

@@ -1,3 +1,17 @@
+/**
+ * Sends budget-related reminders to a user if they are off track or have significantly 
+ * exceeded their monthly budget.
+ *
+ * This function analyzes a user's spending for the current month using transaction data from Plaid.
+ * It determines whether the user is:
+ *  - Spending at a rate that exceeds the expected pace for the month ("TRENDING_OFF_TRACK"), or
+ *  - Significantly over their budget ("OFF_TRACK").
+ * 
+ * It creates reminders in the database, unless one already exists for the current month.
+ * It dynamically adjusts to the user's spending habits, timing reminders based on how frequently the user 
+ * exceeds budget.
+ */ 
+
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
