@@ -1,3 +1,12 @@
+/**
+ * Sends a budget reminder to the user if their spending exceeds their monthly budget.
+ *
+ * This function retrieves the user's budget for the current month, fetches their
+ * transaction data from Plaid, and calculates their total spending. If the user has
+ * exceeded their budget and no active reminder has been sent yet for this month,
+ * it creates a new reminder in the database.
+ */
+ 
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
