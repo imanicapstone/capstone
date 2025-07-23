@@ -9,6 +9,45 @@ const {
   calculateTotalSpent,
 } = require("./reminderUtils");
 
+// helper to calculate past overspending trends in the past six months
+
+async function getAverageOverspendPercent(userId, months = 6) {
+  const budgets = await prisma.budget.findMany({
+    where: { userId },
+    orderBy: { monthStart: "desc" },
+    take: months,
+  });
+
+  let totalOverPercent = 0;
+  let count = 0;
+
+  for (const budget of budgets) {
+    const accessToken = await getUserPlaidToken(userId);
+    if (!accessToken) continue;
+
+    const endOfMonth = new Date(
+      budget.monthStart.getFullYear(),
+      budget.monthStart.getMonth() + 1,
+      0
+    );
+
+    const transactions = await fetchPlaidTransactions(
+      accessToken,
+      budget.monthStart,
+      endOfMonth
+    );
+
+    const spent = calculateTotalSpent(transactions);
+    if (spent > budget.amount) {
+      const percentOver = ((spent - budget.amount) / budget.amount) * 100;
+      totalOverPercent += percentOver;
+      count++;
+    }
+  }
+
+  return count === 0 ? 0 : totalOverPercent / count;
+}
+
 module.exports = async function offTrackReminder(userId) {
   const currentMonth = new Date();
 
@@ -49,28 +88,50 @@ module.exports = async function offTrackReminder(userId) {
   );
   const totalSpent = calculateTotalSpent(transactions);
 
-  // check if totalPercent is proportional to monthPercent (with a slight buffer)
+  const avgOverspend = await getAverageOverspendPercent(userId); // e.g. 12.5
+
+  // dynamic buffer, more lenient if user usually stays on budget
+  let userBuffer;
+  if (avgOverspend > 20) {
+    userBuffer = 0.05; // warn early
+  } else if (avgOverspend > 10) {
+    userBuffer = 0.08;
+  } else {
+    userBuffer = 0.15; // warn later
+  }
+
 
   function isTrendingOffTrack({
     totalSpent,
     budget,
     numDays,
     daysInMonth,
-    buffer = 0.1,
+    buffer = userBuffer,
   }) {
     if (!budget || daysInMonth === 0) return false;
 
-    const totalPercent = totalSpent / budget;
+    // how far we are in the month vs how much the user is expected to spend 
     const monthPercent = numDays / daysInMonth;
+    const expectedSpend = budget * monthPercent;
 
-    return totalPercent > monthPercent + buffer;
+    // how much user has gone over budget 
+    const overAmount = totalSpent - expectedSpend;
+
+    // multiplies by the dynamic buffer 
+
+    if (overAmount > budget * buffer) {
+      const percentOver = (overAmount / budget) * 100;
+      return { percentOver };
+    }
+
+    return;
   }
-
   const isOffTrack = isTrendingOffTrack({
     totalSpent,
     budget: budget.amount,
     numDays,
     daysInMonth,
+    percentOver,
   });
 
   const existing = await prisma.reminder.findFirst({
