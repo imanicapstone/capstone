@@ -1,5 +1,8 @@
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
+const { 
+  createReminder
+} = require("./reminderUtils");
 
 module.exports = async function secondaryReminder(userId) {
   // reminders checked within the past day
@@ -36,16 +39,15 @@ module.exports = async function secondaryReminder(userId) {
 
   // Create secondary reminders for each unaddressed reminder
   for (const reminder of unaddressedReminders) {
-    await prisma.reminder.create({
-      data: {
-        userId,
-        type: "SECONDARY_REMINDER",
-        title: "Follow-up: Action needed on your financial reminder",
-        message: `You still have an unaddressed reminder: "${reminder.title}". Consider taking action to improve your financial health.`,
-        isActive: true,
-        // Optional: link to original reminder
-        relatedReminderId: reminder.id,
-      },
+    const title = "Follow-up: Action needed on your financial reminder"
+    const message = `You still have an unaddressed reminder: "${reminder.title}". Consider taking action to improve your financial health.`
+
+    await createReminder({
+      userId,
+      type: "SECONDARY_REMINDER",
+      title,
+      message,
+      isActive: true,
     });
 
     // Update the original reminder to track when secondary reminder was sent
