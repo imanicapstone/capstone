@@ -36,6 +36,12 @@ const Dashboard = () => {
     navigate(`/reminders/${userId}`);
   };
 
+  const handleGoalsClick = () => {
+    navigate(`/reminders/${userId}`);
+  };
+
+  
+
   const fetchTransactionsAndBudget = async () => {
     if (!currentUser) return;
 
