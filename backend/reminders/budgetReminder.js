@@ -16,6 +16,8 @@ const {
   getUserPlaidToken,
   fetchPlaidTransactions,
   calculateTotalSpent,
+  findReminder,
+  createReminder,
 } = require("./reminderUtils");
 
 module.exports = async function budgetReminder(userId) {
@@ -47,16 +49,11 @@ module.exports = async function budgetReminder(userId) {
   const totalSpent = calculateTotalSpent(transactions);
 
   // checks if reminder already exists
-  const existing = await prisma.reminder.findFirst({
-    where: {
-      userId,
-      type: "SPENDING_OVER_BUDGET",
-      createdAt: {
-        gte: monthStart,
-        lte: monthEnd,
-      },
-      isActive: true,
-    },
+  const existing = await findReminder({
+    userId,
+    type: "SPENDING_OVER_BUDGET",
+    monthStart,
+    monthEnd,
   });
 
   const monthName = monthStart.toLocaleDateString("en-US", {
@@ -65,18 +62,18 @@ module.exports = async function budgetReminder(userId) {
   });
 
   if (totalSpent > budget.amount && !existing) {
-    await prisma.reminder.create({
-      data: {
-        userId,
-        type: "SPENDING_OVER_BUDGET",
-        title: "Be careful! you spent over your budget this month.",
-        message: `You spent $${totalSpent.toFixed(
-          2
-        )} in ${monthName}, which exceeded your budget of $${budget.amount.toFixed(
-          2
-        )}.`,
-        isActive: true,
-      },
+    const title = "Be careful! you spent over your budget this month.";
+    const message = `You spent $${totalSpent.toFixed(
+      2
+    )} in ${monthName}, which exceeded your budget of $${budget.amount.toFixed(
+      2
+    )}.`;
+
+    await createReminder({
+      userId,
+      type: "SPENDING_OVER_BUDGET",
+      title,
+      message,
     });
   }
 };

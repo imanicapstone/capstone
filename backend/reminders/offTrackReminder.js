@@ -21,6 +21,8 @@ const {
   getUserPlaidToken,
   fetchPlaidTransactions,
   calculateTotalSpent,
+  findReminder, 
+  createReminder
 } = require("./reminderUtils");
 
 // helper to calculate past overspending trends in the past six months
@@ -148,60 +150,48 @@ module.exports = async function offTrackReminder(userId) {
     percentOver,
   });
 
-  const existing = await prisma.reminder.findFirst({
-    where: {
-      userId,
-      type: "OFF_TRACK",
-      createdAt: {
-        gte: monthStart,
-        lte: monthEnd,
-      },
-      isActive: true,
-    },
+
+  const existing = await findReminder({
+    userId,
+    type: "OFF_TRACK",
+    monthStart,
+    monthEnd,
   });
 
-  const trendingReminder = await prisma.reminder.findFirst({
-    where: {
-      userId,
-      type: "TRENDING_OFF_TRACK",
-      createdAt: {
-        gte: monthStart,
-        lte: monthEnd,
-      },
-      isActive: true,
-    },
+  const trendingReminder = await findReminder({
+    userId,
+    type: "TRENDING_OFF_TRACK",
+    monthStart,
+    monthEnd,
   });
 
   if (totalSpent > budget.amount * budgetOverMultiplier && !existing) {
-    await prisma.reminder.create({
-      data: {
-        userId,
-        type: "OFF_TRACK",
-        title:
-          "Be careful! you've gone significantly over your monthly budget!",
-        message: `You have spent $${totalSpent.toFixed(
+    const title = "Be careful! you've gone significantly over your monthly budget!"
+    const message = `You have spent $${totalSpent.toFixed(
           2
         )} this month, which is significantly over your budget of $${budget.amount.toFixed(
           2
-        )}.`,
-        isActive: true,
-      },
+        )}.`
+    await createReminder({
+      userId,
+      type: "SPENDING_OVER_BUDGET",
+      title,
+      message,
     });
   }
 
   if (isOffTrack && !trendingReminder) {
-    await prisma.reminder.create({
-      data: {
-        userId,
-        type: "TRENDING_OFF_TRACK",
-        title: "You're trending off track with your spending",
-        message: `You've spent $${totalSpent.toFixed(
+    const title = "You're trending off track with your spending"
+    const message = `You've spent $${totalSpent.toFixed(
           2
         )} so far, which is ahead of pace for your monthly budget of $${budget.amount.toFixed(
           2
-        )}. Consider slowing down to stay within budget.`,
-        isActive: true,
-      },
+        )}. Consider slowing down to stay within budget.`
+    await createReminder({
+      userId,
+      type: "TRENDING_OFF_TRACK",
+      title,
+      message,
     });
   }
 };
