@@ -39,8 +39,48 @@ function calculateTotalSpent(transactions) {
   return transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 }
 
+async function findReminder({
+  userId,
+  type,
+  monthStart,
+  monthEnd,
+  isActive = true,
+}) {
+  return await prisma.reminder.findFirst({
+    where: {
+      userId,
+      type,
+      createdAt: {
+        gte: monthStart,
+        lte: monthEnd,
+      },
+      isActive,
+    },
+  });
+}
+
+async function createReminder({
+  userId,
+  type,
+  title,
+  message,
+  isActive = true,
+}) {
+  return await prisma.reminder.create({
+    data: {
+      userId,
+      type,
+      title,
+      message,
+      isActive,
+    },
+  });
+}
+
 module.exports = {
   getUserPlaidToken,
   fetchPlaidTransactions,
   calculateTotalSpent,
+  findReminder,
+  createReminder,
 };
