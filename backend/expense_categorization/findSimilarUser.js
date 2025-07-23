@@ -1,3 +1,11 @@
+/**
+ * Finds the user whose transaction history (by merchant name) is most similar to the given user
+ * within the current month.
+ *
+ * The similarity metric is based on the number of overlapping merchants between the given user and all other users in the DB.
+ * The function retrieves plaid transactions for the current month across the user DB, and compares to see who is the most similar.
+ */
+
 const { PrismaClient } = require("../generated/prisma");
 const plaidClient = require("../plaidClient");
 const prisma = new PrismaClient();
@@ -10,14 +18,15 @@ const {
 async function findMostSimilarUser(userId) {
   // gets the current user's information first
 
+
   const originalAccessToken = await getUserPlaidToken(userId);
   if (!originalAccessToken) return;
 
   const originalTransactions = await fetchPlaidTransactions(
     originalAccessToken,
     monthStart,
-    monthEnd,
-);
+    monthEnd
+  );
   // create set of current users merchants
   const originalMerchants = new Set(
     originalTransactions.map((transaction) =>
@@ -28,7 +37,7 @@ async function findMostSimilarUser(userId) {
   // loops through all users
   const users = await prisma.user.findMany();
 
-  let largestMatchCount = 0;
+  let largestSimilarity  = 0;
   let mostSimilarUser = null;
 
   for (const user of users) {
@@ -39,9 +48,9 @@ async function findMostSimilarUser(userId) {
     if (!otherAccessToken) continue;
 
     const otherTransactions = await fetchPlaidTransactions(
-        otherAccessToken,
-        monthStart,
-        monthEnd,
+      otherAccessToken,
+      monthStart,
+      monthEnd
     );
     // new set of merchants per user
     const otherMerchants = new Set(
@@ -50,27 +59,26 @@ async function findMostSimilarUser(userId) {
       )
     );
 
-    // counts matching merchants and calculates intersection
-    let matchCount = 0;
-    for (const merchant of otherMerchants) {
-      if (originalMerchants.has(merchant)) {
-        matchCount++;
-      }
-    }
+    // all matching merchants
+    const intersection = [...otherMerchants].filter((merchant) =>
+      originalMerchants.has(merchant)
+    ).length;
+    // all unique merchants (considers union to maintain respect to size)
+    const union = new Set([...originalMerchants, ...otherMerchants]);
+
+    // real similarity (with respect to size)
+
+    const similarity = union.size === 0 ? 0 : intersection.length / union.size;
 
     // return user with most matching merchants
 
-    if (matchCount > largestMatchCount) {
-      largestMatchCount = matchCount;
-      mostSimilarUser = user.id;
+    if (similarity > largestSimilarity) {
+      largestSimilarity = similarity;
+      mostSimilarUser = user;
     }
-
-    console.log(mostSimilarUser);
-
-    
   }
 
-  return { mostSimilarUser, largestMatchCount };
+  return { mostSimilarUser, similarity: largestSimilarity };
 }
 
-module.exports = { findMostSimilarUser }
+module.exports = { findMostSimilarUser };
