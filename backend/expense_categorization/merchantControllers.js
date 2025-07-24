@@ -2,6 +2,9 @@ const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const { categorizeTransaction } = require("./merchantCategories"); // yelp catgorization
 const { categorizeBySynonym } = require("./synonymCategorization"); // synonym categorization
+const {
+  findMostOverwrittenCategory,
+} = require("./findMostOverwrittenCategory"); // returns category most recommended
 
 // directly retrieves yelp confidence scores
 exports.getMerchantConfidence = async (req, res) => {
@@ -40,5 +43,47 @@ exports.getMerchantConfidence = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Failed to fetch merchant confidence" });
+  }
+};
+
+exports.recommendCategory = async (req, res) => {
+  console.log("recommendCategory function called");
+  console.log("Request body:", req.body);
+  const userId = req.user.uid;
+  const { categoryToOverwrite } = req.body;
+
+  if (!categoryToOverwrite) {
+    return res.status(400).json({ error: "Missing category to overwrite" });
+  }
+
+  try {
+    const recommendedCateg = await findMostOverwrittenCategory(
+      userId,
+      categoryToOverwrite
+    );
+
+    if (!recommendedCateg) {
+      // if no common categories are in the db, creates a fall back category
+      const fallbacks = {
+        "Food and Drink": "Groceries",
+        Bars: "Entertainment",
+        Shopping: "Personal",
+        Payment: "Bills & Utilities",
+        Transfer: "Financial",
+      };
+      const fallbackCategory =
+        fallbacks[categoryToOverwrite] || "Miscellaneous";
+
+      return res.json({
+        recommendedCategory: fallbackCategory,
+        confidenceScore: 0.5,
+        similarityScore: 0,
+        similarUser: null,
+      });
+    }
+    return res.json(recommendedCateg);
+  } catch (error) {
+    console.error("Error recommending category:", error);
+    return res.status(500).json({ error: "Failed to recommend category" });
   }
 };
