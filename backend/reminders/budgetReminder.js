@@ -40,7 +40,7 @@ module.exports = async function budgetReminder(userId) {
   const accessToken = await getUserPlaidToken(userId);
   if (!accessToken) return;
 
-  // Get transactions from Plaid for the current week
+  // Get transactions from Plaid for the current month
   const transactions = await fetchPlaidTransactions(
     accessToken,
     monthStart,
