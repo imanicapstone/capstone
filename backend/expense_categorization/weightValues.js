@@ -23,8 +23,6 @@ const DECAY_FACTOR = 0.9;
  * @param {string} userId - The ID of the user to calculate similarity for.
  * @returns {Map<string, number>} The updated weights Map with normalized weight values.
  */
-
-
 async function calculateWeights(userId) {
   const similarUserScore = await findSimilarUser(userId);
   // update similar user weight based on the similarity score with the most similar user
