@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
  * @async
  * @function getUserPlaidToken
  * @param {string} userId - The unique identifier of the user.
- */ 
+ */
 async function getUserPlaidToken(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -27,7 +27,7 @@ async function getUserPlaidToken(userId) {
  * @param {Date} startDate - The start date for the transaction query.
  * @param {Date} endDate - The end date for the transaction query.
  * @param {number} [count=499] - Optional maximum number of transactions to return (default is 499).
- */ 
+ */
 async function fetchPlaidTransactions(
   accessToken,
   startDate,
@@ -53,7 +53,7 @@ async function fetchPlaidTransactions(
  * Calculates the total spending amount from a list of transactions.
  *
  * @param {Array<{ amount: number }>} transactions - Array of transaction objects, each with an amount property.
- */ 
+ */
 function calculateTotalSpent(transactions) {
   return transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 }

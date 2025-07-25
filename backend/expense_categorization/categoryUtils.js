@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
  * @async
  * @function getUserPlaidToken
  * @param {string} userId - The unique identifier of the user.
- */ 
+ */
 async function getUserPlaidToken(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -27,7 +27,7 @@ async function getUserPlaidToken(userId) {
  * @param {Date} startDate - The start date for the transaction query.
  * @param {Date} endDate - The end date for the transaction query.
  * @param {number} [count=499] - Optional maximum number of transactions to return (default is 499).
- */ 
+ */
 async function fetchPlaidTransactions(
   accessToken,
   startDate,

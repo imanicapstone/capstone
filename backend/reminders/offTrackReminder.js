@@ -7,12 +7,11 @@ const {
   getUserPlaidToken,
   fetchPlaidTransactions,
   calculateTotalSpent,
-  findReminder, 
-  createReminder
+  findReminder,
+  createReminder,
 } = require("./reminderUtils");
 
 // helper to calculate past overspending trends in the past six months
-
 
 /**
  * Calculates the average percentage by which a user has overspent their budget
@@ -26,7 +25,7 @@ const {
  * @function getAverageOverspendPercent
  * @param {string} userId - The unique identifier of the user.
  * @param {number} [months=6] - The number of recent months to consider for the calculation.
- */ 
+ */
 async function getAverageOverspendPercent(userId, months = 6) {
   const budgets = await prisma.budget.findMany({
     where: { userId },
@@ -64,7 +63,6 @@ async function getAverageOverspendPercent(userId, months = 6) {
   return count === 0 ? 0 : totalOverPercent / count;
 }
 
-
 /**
  * Sends an "off track" budget reminder if the user is spending faster than usual
  * relative to their monthly budget and past spending habits.
@@ -76,7 +74,7 @@ async function getAverageOverspendPercent(userId, months = 6) {
  * @async
  * @function offTrackReminder
  * @param {string} userId - The unique identifier of the user.
- */ 
+ */
 module.exports = async function offTrackReminder(userId) {
   const currentMonth = new Date();
 
@@ -129,7 +127,6 @@ module.exports = async function offTrackReminder(userId) {
     userBuffer = 0.15; // warn later
   }
 
-
   function isTrendingOffTrack({
     totalSpent,
     budget,
@@ -139,14 +136,14 @@ module.exports = async function offTrackReminder(userId) {
   }) {
     if (!budget || daysInMonth === 0) return false;
 
-    // how far we are in the month vs how much the user is expected to spend 
+    // how far we are in the month vs how much the user is expected to spend
     const monthPercent = numDays / daysInMonth;
     const expectedSpend = budget * monthPercent;
 
-    // how much user has gone over budget 
+    // how much user has gone over budget
     const overAmount = totalSpent - expectedSpend;
 
-    // multiplies by the dynamic buffer 
+    // multiplies by the dynamic buffer
 
     if (overAmount > budget * buffer) {
       const percentOver = (overAmount / budget) * 100;
@@ -163,7 +160,6 @@ module.exports = async function offTrackReminder(userId) {
     percentOver,
   });
 
-
   const existing = await findReminder({
     userId,
     type: "OFF_TRACK",
@@ -179,12 +175,13 @@ module.exports = async function offTrackReminder(userId) {
   });
 
   if (totalSpent > budget.amount * budgetOverMultiplier && !existing) {
-    const title = "Be careful! you've gone significantly over your monthly budget!"
+    const title =
+      "Be careful! you've gone significantly over your monthly budget!";
     const message = `You have spent $${totalSpent.toFixed(
-          2
-        )} this month, which is significantly over your budget of $${budget.amount.toFixed(
-          2
-        )}.`
+      2
+    )} this month, which is significantly over your budget of $${budget.amount.toFixed(
+      2
+    )}.`;
     await createReminder({
       userId,
       type: "SPENDING_OVER_BUDGET",
@@ -194,12 +191,12 @@ module.exports = async function offTrackReminder(userId) {
   }
 
   if (isOffTrack && !trendingReminder) {
-    const title = "You're trending off track with your spending"
+    const title = "You're trending off track with your spending";
     const message = `You've spent $${totalSpent.toFixed(
-          2
-        )} so far, which is ahead of pace for your monthly budget of $${budget.amount.toFixed(
-          2
-        )}. Consider slowing down to stay within budget.`
+      2
+    )} so far, which is ahead of pace for your monthly budget of $${budget.amount.toFixed(
+      2
+    )}. Consider slowing down to stay within budget.`;
     await createReminder({
       userId,
       type: "TRENDING_OFF_TRACK",

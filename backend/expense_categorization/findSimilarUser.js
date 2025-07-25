@@ -1,4 +1,3 @@
-
 const { PrismaClient } = require("../generated/prisma");
 const plaidClient = require("../plaidClient");
 const prisma = new PrismaClient();
@@ -19,7 +18,6 @@ const {
 async function findMostSimilarUser(userId) {
   // gets the current user's information first
 
-
   const originalAccessToken = await getUserPlaidToken(userId);
   if (!originalAccessToken) return;
 
@@ -38,7 +36,7 @@ async function findMostSimilarUser(userId) {
   // loops through all users
   const users = await prisma.user.findMany();
 
-  let largestSimilarity  = 0;
+  let largestSimilarity = 0;
   let mostSimilarUser = null;
 
   for (const user of users) {
