@@ -1,17 +1,3 @@
-/**
- * Sends budget-related reminders to a user if they are off track or have significantly 
- * exceeded their monthly budget.
- *
- * This function analyzes a user's spending for the current month using transaction data from Plaid.
- * It determines whether the user is:
- *  - Spending at a rate that exceeds the expected pace for the month ("TRENDING_OFF_TRACK"), or
- *  - Significantly over their budget ("OFF_TRACK").
- * 
- * It creates reminders in the database, unless one already exists for the current month.
- * It dynamically adjusts to the user's spending habits, timing reminders based on how frequently the user 
- * exceeds budget.
- */ 
-
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
@@ -27,6 +13,20 @@ const {
 
 // helper to calculate past overspending trends in the past six months
 
+
+/**
+ * Calculates the average percentage by which a user has overspent their budget
+ * over a specified number of recent months.
+ *
+ * For each of the past `months` budgets, fetches the user's transactions via Plaid,
+ * sums the spending, and calculates the percentage overspent if spending exceeds the budget.
+ * Returns the average overspend percentage across all months where overspending occurred.
+ *
+ * @async
+ * @function getAverageOverspendPercent
+ * @param {string} userId - The unique identifier of the user.
+ * @param {number} [months=6] - The number of recent months to consider for the calculation.
+ */ 
 async function getAverageOverspendPercent(userId, months = 6) {
   const budgets = await prisma.budget.findMany({
     where: { userId },
@@ -64,6 +64,19 @@ async function getAverageOverspendPercent(userId, months = 6) {
   return count === 0 ? 0 : totalOverPercent / count;
 }
 
+
+/**
+ * Sends an "off track" budget reminder if the user is spending faster than usual
+ * relative to their monthly budget and past spending habits.
+ *
+ * Calculates how much of the month has elapsed and compares current spending to
+ * the expected spending progress considering the user's historical overspending percentage.
+ * Adjusts the warning threshold (buffer) dynamically based on average overspending.
+ *
+ * @async
+ * @function offTrackReminder
+ * @param {string} userId - The unique identifier of the user.
+ */ 
 module.exports = async function offTrackReminder(userId) {
   const currentMonth = new Date();
 

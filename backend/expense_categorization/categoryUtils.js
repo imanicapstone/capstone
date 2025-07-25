@@ -2,6 +2,13 @@ const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 
+/**
+ * Retrieves the Plaid access token for a given user from the database.
+ *
+ * @async
+ * @function getUserPlaidToken
+ * @param {string} userId - The unique identifier of the user.
+ */ 
 async function getUserPlaidToken(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -11,7 +18,16 @@ async function getUserPlaidToken(userId) {
   return user?.plaidAccessToken || null;
 }
 
-// Fetch transactions from Plaid with error handling
+/**
+ * Fetches a list of transactions from the Plaid API for a given access token and date range.
+ *
+ * @async
+ * @function fetchPlaidTransactions
+ * @param {string} accessToken - The Plaid access token for the user's account.
+ * @param {Date} startDate - The start date for the transaction query.
+ * @param {Date} endDate - The end date for the transaction query.
+ * @param {number} [count=499] - Optional maximum number of transactions to return (default is 499).
+ */ 
 async function fetchPlaidTransactions(
   accessToken,
   startDate,

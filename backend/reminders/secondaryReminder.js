@@ -1,3 +1,9 @@
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
+const { 
+  createReminder
+} = require("./reminderUtils");
+
 /**
  * Sends follow-up ("secondary") reminders for any unaddressed financial reminders older than 1 day.
  *
@@ -5,14 +11,10 @@
  * more than a day ago and either haven't had a secondary reminder sent, or had one sent over a day ago.
  * For each matching reminder it creates a new secondary reminder entry and updates the original
  * reminder's lastSecondaryReminderAt field to prevent excessive follow-ups.
- */
-
-const { PrismaClient } = require("../generated/prisma");
-const prisma = new PrismaClient();
-const { 
-  createReminder
-} = require("./reminderUtils");
-
+ *
+ * @async
+ * @param {string} userId - The unique identifier of the user to check reminders for.
+ */ 
 module.exports = async function secondaryReminder(userId) {
   // reminders checked within the past day
   const oneDayAgo = new Date();

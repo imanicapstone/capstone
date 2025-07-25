@@ -5,15 +5,16 @@ const { getOrCreateCategory } = require("./merchantCategories");
 const stringSimilarity = require("string-similarity");
 
 /**
- * categorizes merchant based on known synonyms and string similarity
- * with existing categories
+ * Categorizes a merchant by analyzing its synonyms and matching them against known categories.
+ * 
+ * 1. Attempts to find direct synonym matches in the database with associated confidence scores.
+ * 2. If no direct match is found, falls back to string similarity between synonyms and the user's custom categories.
  *
- * 1. checks for direct synonym matches in the database with confidence scores.
- * 2. if no match is found, compares synonyms against the user's categories using
- *    string similarity to determine match
- *
- */
-
+ * @async
+ * @function categorizeBySynonym
+ * @param {string} merchantName - The name of the merchant to categorize.
+ * @param {string} userId - The ID of the user whose categories are used for comparison.
+ */ 
 async function categorizeBySynonym(merchantName, userId) {
   const merchantSynonyms = await synonymMatch(merchantName);
 

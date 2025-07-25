@@ -1,10 +1,3 @@
-/**
- * Finds the user whose transaction history (by merchant name) is most similar to the given user
- * within the current month.
- *
- * The similarity metric is based on the number of overlapping merchants between the given user and all other users in the DB.
- * The function retrieves plaid transactions for the current month across the user DB, and compares to see who is the most similar.
- */
 
 const { PrismaClient } = require("../generated/prisma");
 const plaidClient = require("../plaidClient");
@@ -15,6 +8,14 @@ const {
   fetchPlaidTransactions,
 } = require("./categoryUtils");
 
+/**
+ * Finds the user whose transaction history (by merchant name) is most similar to the given user
+ * within the current month.
+ *
+ * The similarity metric is based on the number of overlapping merchants between the given user and all other users in the DB.
+ * The function retrieves plaid transactions for the current month across the user DB, and compares to see who is the most similar.
+ * @param {string} userId - The ID of the user for who the category is being determined or created.
+ */
 async function findMostSimilarUser(userId) {
   // gets the current user's information first
 
