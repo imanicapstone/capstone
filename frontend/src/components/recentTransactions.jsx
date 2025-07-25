@@ -12,6 +12,7 @@ const recentTransactions = () => {
   const [merchantConfidenceScores, setMerchantConfidenceScores] = useState({});
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [newCategory, setNewCategory] = useState("");
+  const [recommendedCategories, setRecommendedCategories] = useState({});
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -26,7 +27,7 @@ const recentTransactions = () => {
         setError(null);
 
         const token = await currentUser.getIdToken();
-        const response = await fetch(`${API_BASE_URL}/plaid/transactions`, {
+        const response = await fetch(`${API_BASE_URL}/plaid/transactions?cached=true`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -40,6 +41,22 @@ const recentTransactions = () => {
 
         const data = await response.json();
         setTransactions(data);
+
+        const scores = {};
+      const recommendations = {};
+      
+      data.forEach((tx) => {
+        if (tx.merchant) {
+          scores[tx.merchant] = tx.confidenceScore;
+          if (tx.recommendedCategory) {
+            recommendations[tx.id] = tx.recommendedCategory;
+          }
+        }
+      });
+      
+      setMerchantConfidenceScores(scores);
+      setRecommendedCategories(recommendations);
+
       } catch (err) {
         console.error("Error fetching transactions:", err);
         setError("Failed to fetch transactions. Please try again.");
@@ -51,58 +68,12 @@ const recentTransactions = () => {
     fetchTransactions();
   }, [currentUser]);
 
-  useEffect(() => {
-    const fetchConfidenceScores = async () => {
-      if (!transactions.length || !currentUser) return;
-
-      const token = await currentUser.getIdToken();
-      const scores = {};
-      const synonymInfo = {};
-
-      // gets unique merchants
-      const merchantNames = [...new Set(transactions.map((tx) => tx.merchant))];
-
-      // gets confidence score for each merchant
-      for (const merchantName of merchantNames) {
-        try {
-          const response = await fetch(
-            `${API_BASE_URL}/plaid/merchant-confidence/${encodeURIComponent(
-              merchantName
-            )}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            scores[merchantName] = data.confidenceScore;
-
-            // add synonym data
-            if (data.usedSynonym) {
-              synonymInfo[merchantName] = data.usedSynonym;
-            }
-          }
-        } catch (err) {
-          console.error(`Error fetching confidence for ${merchantName}:`, err);
-        }
-      }
-
-      setMerchantConfidenceScores(scores);
-    };
-
-    fetchConfidenceScores();
-  }, [transactions, currentUser]);
-
   const handleSaveCategory = async (transactionId) => {
     if (!newCategory.trim()) {
       return; // doesnt save empty categs
     }
-    // full transaction 
-    const transaction = transactions.find(tx => tx.id === transactionId);
+    // full transaction
+    const transaction = transactions.find((tx) => tx.id === transactionId);
 
     try {
       const token = await currentUser.getIdToken();
@@ -117,7 +88,7 @@ const recentTransactions = () => {
           categoryName: newCategory.trim(),
           amount: transaction.amount,
           date: transaction.date,
-          description: transaction.name
+          description: transaction.name,
         }),
       });
 
@@ -140,6 +111,52 @@ const recentTransactions = () => {
     }
   };
 
+  const refreshTransactions = async () => {
+    if (!currentUser) return;
+
+    try {
+      setLoading(true);
+      const token = await currentUser.getIdToken();
+
+      // calls endpoint without cache for fresh data
+      const response = await fetch(`${API_BASE_URL}/plaid/transactions`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setTransactions(data);
+
+      // extracts confidence scores and reccomendations
+      const scores = {};
+      const recommendations = {};
+
+      data.forEach((tx) => {
+        if (tx.merchant) {
+          scores[tx.merchant] = tx.confidenceScore;
+          if (tx.recommendedCategory) {
+            recommendations[tx.id] = tx.recommendedCategory;
+          }
+        }
+      });
+
+      setMerchantConfidenceScores(scores);
+      setRecommendedCategories(recommendations);
+    } catch (err) {
+      console.error("Error refreshing transactions:", err);
+      setError("Failed to refresh transactions. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -151,6 +168,13 @@ const recentTransactions = () => {
         {" "}
         Recent Transactions{" "}
       </h2>
+      <button
+        onClick={refreshTransactions}
+        className="bg-[#ceb8db] text-white px-3 py-1 rounded ml-2 mb-10"
+        disabled={loading}
+      >
+        Refresh from Bank
+      </button>
       <div className="flex justify-center">
         <Card className=" w-[48vw] max-w-[600px] min-w-[280px] h-300 bg-[#ceb8db]">
           <CardHeader>
@@ -193,6 +217,7 @@ const recentTransactions = () => {
                               >
                                 Save
                               </button>
+
                               <button
                                 onClick={() => {
                                   setEditingTransaction(null);
@@ -204,16 +229,35 @@ const recentTransactions = () => {
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => {
-                                setEditingTransaction(tx.id);
-                                setNewCategory(tx.category || "");
-                              }}
-                              className="ml-2 text-white px-2 py-1 rounded text-xs"
-                              style={{ backgroundColor: "#a0bd87" }}
-                            >
-                              Override Category
-                            </button>
+                            <div className="flex items-center">
+                              <button
+                                onClick={() => {
+                                  setEditingTransaction(tx.id);
+                                  setNewCategory(tx.category || "");
+                                }}
+                                className="ml-2 text-white px-2 py-1 rounded text-xs"
+                                style={{ backgroundColor: "#a0bd87" }}
+                              >
+                                Override Category
+                              </button>
+
+                              {recommendedCategories[tx.id] && (
+                                <span className="ml-2 text-xs">
+                                  Suggested:
+                                  <button
+                                    onClick={() => {
+                                      setNewCategory(
+                                        recommendedCategories[tx.id]
+                                      );
+                                      setEditingTransaction(tx.id);
+                                    }}
+                                    className="ml-1 bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                                  >
+                                    {recommendedCategories[tx.id]}
+                                  </button>
+                                </span>
+                              )}
+                            </div>
                           )}
                         </>
                       )}
