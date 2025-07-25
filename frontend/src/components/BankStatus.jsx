@@ -3,7 +3,6 @@ import { useAuth } from "../context/AuthContext";
 import PlaidLink from "./PlaidLink";
 import { API_BASE_URL } from "../constants";
 
-
 const BankStatus = () => {
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -16,14 +15,11 @@ const BankStatus = () => {
   const checkConnectionStatus = async () => {
     try {
       const token = await currentUser.getIdToken();
-      const response = await fetch(
-        `${API_BASE_URL}/plaid/connection-status`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/plaid/connection-status`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setConnected(data.connected);
     } catch (error) {

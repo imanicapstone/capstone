@@ -83,7 +83,7 @@ const Reminders = () => {
         setReminders(data.reminders || []);
         setRemindersEnabled(data.remindersEnabled ?? true); // checks if user has reminders on
         if (!data.remindersEnabled) {
-            setMessage("Reminders are currently disabled")
+          setMessage("Reminders are currently disabled");
         }
       } catch (err) {
         console.error("Error fetching reminders:", err);

@@ -1,10 +1,7 @@
 const plaidClient = require("../plaidClient");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
-const {
-  findReminder,
-  createReminder,
-} = require("./reminderUtils");
+const { findReminder, createReminder } = require("./reminderUtils");
 
 /**
  * Sends a reminder if the user made a purchase from a merchant they intended to avoid.
@@ -15,7 +12,7 @@ const {
  *
  * @async
  * @param {string} userId - The unique identifier of the user.
- */ 
+ */
 module.exports = async function purchaseReminder(userId) {
   // Get user's Plaid access token
   const user = await prisma.user.findUnique({
@@ -80,28 +77,28 @@ module.exports = async function purchaseReminder(userId) {
       transaction.merchant_name || transaction.name || "unknown merchant";
 
     const existingReminder = await findReminder({
-    userId,
-    type: "PURCHASE_REMINDER",
-     message: {
-          contains: merchantName,
-        },
-    monthStart,
-    monthEnd,
-  });
-
-    if (!existingReminder) {
-      const title = "Avoided Merchant Purchase Alert"
-      const message = `You purchased from ${merchantName} on ${new Date(
-            transaction.date
-          ).toLocaleDateString()}. You said you wanted to avoid this merchant!`
-        
-      await createReminder({
       userId,
       type: "PURCHASE_REMINDER",
-      title,
-      message,
-      isActive: true,
+      message: {
+        contains: merchantName,
+      },
+      monthStart,
+      monthEnd,
     });
+
+    if (!existingReminder) {
+      const title = "Avoided Merchant Purchase Alert";
+      const message = `You purchased from ${merchantName} on ${new Date(
+        transaction.date
+      ).toLocaleDateString()}. You said you wanted to avoid this merchant!`;
+
+      await createReminder({
+        userId,
+        type: "PURCHASE_REMINDER",
+        title,
+        message,
+        isActive: true,
+      });
     }
   }
 };

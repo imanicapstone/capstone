@@ -209,25 +209,8 @@ exports.getTransactions = async (req, res) => {
           },
         });
 
-        // if transaction doesnt exist, save to database
-        if (!existingTransaction) {
-          const savedTransaction = await prisma.transaction.create({
-            data: {
-              userId: firebaseUid,
-              amount: tx.amount,
-              type: tx.amount > 0 ? "income" : "expense",
-              category: category.name,
-              description: tx.name,
-              date: new Date(tx.date),
-              merchant: tx.merchant,
-            },
-          });
 
-          tx.id = savedTransaction.id;
-        } else {
-          tx.id = existingTransaction.id;
-          tx.category = existingTransaction.category || category.name;
-        }
+        
       }
     }
 

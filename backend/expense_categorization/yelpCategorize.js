@@ -3,7 +3,7 @@ const axios = require("axios");
 
 /**
  * Fetches category information for a given business name from the Yelp Fusion API.
- * 
+ *
  * Uses the Yelp API to search for a business by name and location, then extracts
  * its category titles if found. Defaults to searching in San Francisco, CA.
  *

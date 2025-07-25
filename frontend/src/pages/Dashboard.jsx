@@ -40,8 +40,6 @@ const Dashboard = () => {
     navigate(`/user/goals/${userId}`);
   };
 
-  
-
   const fetchTransactionsAndBudget = async () => {
     if (!currentUser) return;
 
@@ -99,7 +97,6 @@ const Dashboard = () => {
     fetchTransactionsAndBudget();
   }, [currentUser]);
 
-
   return (
     <div>
       <Navbar />
@@ -119,8 +116,10 @@ const Dashboard = () => {
         <div className="flex flex-col space-y-10 p-0 w-full max-w-[600px]">
           <Card className=" ml-0 w-[48vw] max-w-[600px] min-w-[280px] h-25 bg-[#ceb8db] cursor-pointer hover:bg-[#6f6493] transition-colors duration-300">
             <CardHeader>
-              <CardTitle className="text-gray-50 text-xl font-semibold"
-              onClick={handleGoalsClick}>
+              <CardTitle
+                className="text-gray-50 text-xl font-semibold"
+                onClick={handleGoalsClick}
+              >
                 Goals
               </CardTitle>
             </CardHeader>

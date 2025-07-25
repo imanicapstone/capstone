@@ -1,6 +1,6 @@
-const {findSimilarUser } = require("./findSimilarUser")
+const { findSimilarUser } = require("./findSimilarUser");
 
-// hashmap of weights 
+// hashmap of weights
 
 const weights = new Map();
 
@@ -30,9 +30,9 @@ async function calculateWeights(userId) {
   // gets sum of weights to use for normalization
   const sumWeights = USER_WEIGHT + GLOBAL_WEIGHT + similarUserWeight;
   // normalize weights so they sum to 1
-  weights.set('USER_WEIGHT', userWeight / sumWeights);
-  weights.set('GLOBAL_WEIGHT', globalWeight / sumWeights);
-  weights.set('SIMILAR_USER_WEIGHT', similarUserWeightOriginal / sumWeights);
+  weights.set("USER_WEIGHT", userWeight / sumWeights);
+  weights.set("GLOBAL_WEIGHT", globalWeight / sumWeights);
+  weights.set("SIMILAR_USER_WEIGHT", similarUserWeightOriginal / sumWeights);
   return weights;
 }
 
