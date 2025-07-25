@@ -3,12 +3,14 @@ const prisma = new PrismaClient();
 const synonyms = require("synonyms");
 
 /**
- * normalizes the inputted merchant name 
- * splits the merchant name to input each word into the synonym package
- * defines necessary parts of speech to loop through for each synonym type 
- * loops through words and parts, returning synonyms for each
+ * Normalizes the inputted merchant name.
+ * Splits the merchant name into individual words and retrieves synonyms for each word using various parts of speech.
+ *
+ * @async
+ * @function synonymMatch
+ * @param {string} merchantName - The merchant name to be normalized and analyzed for synonyms.
+ * @returns {Promise<string[]>} An array of synonyms derived from the merchant name.
  */
-
 async function synonymMatch(merchantName) {
   const normalized = merchantName.toLowerCase().replace(/[^a-z0-9]/g, "");
   const words = normalized.split(" ");

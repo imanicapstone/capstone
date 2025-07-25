@@ -10,16 +10,9 @@ const { calculateConfidenceScore } = require("./confidenceScore")
  * based on the user's own overwrites, similar user's overwrites weighted by similarity,
  * and the database-wide overwrites, then recommends the category with the highest confidence score.
  *
- * - Retrieves the most similar user to the given user.
- * - Fetches transactions where the current user has overwritten categories.
- * - Fetches all transactions where the category was overwritten by any user.
- * - Fetches transactions where the similar user overwrote the category.
- * - Aggregates counts and weights for each overwritten category from the user, similar user, and database.
- * - Calculates total weights and confidence scores for each category.
- * - Sorts categories by confidence score and returns the top recommendation.
- */
-
-
+ * @param {string} userId - The ID of the user for whom to find the category.
+ * @param {string} categoryToOverwrite - The original category to find overwrites for.
+ */ 
 async function findMostOverwrittenCategory(userId, categoryToOverwrite) {
   // gets most similar user 
   const { mostSimilarUser, similarity } = await findMostSimilarUser(userId);

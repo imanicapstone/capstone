@@ -1,6 +1,17 @@
 require("dotenv").config();
 const axios = require("axios");
 
+/**
+ * Fetches category information for a given business name from the Yelp Fusion API.
+ * 
+ * Uses the Yelp API to search for a business by name and location, then extracts
+ * its category titles if found. Defaults to searching in San Francisco, CA.
+ *
+ * @async
+ * @function getYelpCategory
+ * @param {string} businessName - The name of the business to search for.
+ * @param {string} [location="San Francisco, CA"] - The location to search in (defaults to San Francisco).
+ */
 async function getYelpCategory(businessName, location = "San Francisco, CA") {
   const apiKey = process.env.YELP_API_KEY;
 

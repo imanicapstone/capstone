@@ -1,12 +1,14 @@
 /**
- * calculates a confidence score (0-100) indicating how closely a given merchant name
+ * Calculates a confidence score (0-100) indicating how closely a given merchant name
  * matches a Yelp business entry. The score is based on:
  *  - String similarity between the merchant name and Yelp business name (up to 50 points)
  *  - Specificity of Yelp categories (up to 50 points, fewer categories produce a higher score)
- */
-
-
-
+ *
+ * @param {string} merchantName - The merchant name to compare.
+ * @param {Object} yelpData - Yelp business data object.
+ * @param {string} yelpData.name - The Yelp business name.
+ * @param {string[]} [yelpData.yelp_categories] - Array of Yelp category names.
+ */ 
 const stringSimilarity = require("string-similarity");
 
 function calculateConfidenceScore(merchantName, yelpData) {

@@ -17,7 +17,7 @@ const DECAY_FACTOR = 0.9;
  * - Retrieves the similarity score for the provided user ID by calling `findSimilarUser`.
  * - Adjusts the SIMILAR_USER_WEIGHT based on the similarity score.
  * - Normalizes USER_WEIGHT, GLOBAL_WEIGHT, and the adjusted SIMILAR_USER_WEIGHT so they sum to 1.
- * - Updates the `weights` Map with the normalized values.
+ * - Updates the weights map with the normalized values.
  *
  * @async
  * @param {string} userId - The ID of the user to calculate similarity for.
