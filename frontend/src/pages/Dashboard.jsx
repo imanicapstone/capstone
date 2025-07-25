@@ -33,11 +33,11 @@ const Dashboard = () => {
   };
 
   const handleRemindersClick = () => {
-    navigate(`/reminders/${userId}`);
+    navigate(`/user/${userId}/reminders`);
   };
 
   const handleGoalsClick = () => {
-    navigate(`/reminders/${userId}`);
+    navigate(`/user/goals/${userId}`);
   };
 
   const fetchTransactionsAndBudget = async () => {
