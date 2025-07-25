@@ -50,7 +50,6 @@ async function fetchPlaidTransactions(
 }
 
 module.exports = {
-    getUserPlaidToken,
-    fetchPlaidTransactions,
+  getUserPlaidToken,
+  fetchPlaidTransactions,
 };
-
