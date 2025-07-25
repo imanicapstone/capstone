@@ -210,6 +210,8 @@ exports.overrideTransactionCategory = async (req, res) => {
         id: transaction.id,
       },
       data: {
+        // save original category if this is the first override
+        originalCategory: transaction.userOverridden ? transaction.originalCategory : transaction.category,
         category: categoryName,
         userOverridden: true, // indicates override was manually set
       },
