@@ -3,7 +3,6 @@ import { usePlaidLink } from "react-plaid-link";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../constants";
 
-
 const PlaidLink = ({ onSuccess }) => {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -13,16 +12,13 @@ const PlaidLink = ({ onSuccess }) => {
     setLoading(true);
     try {
       const token = await currentUser.getIdToken();
-      const response = await fetch(
-        `${API_BASE_URL}/plaid/create-link-token`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/plaid/create-link-token`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       const data = await response.json();
       setLinkToken(data.link_token);
     } catch (error) {

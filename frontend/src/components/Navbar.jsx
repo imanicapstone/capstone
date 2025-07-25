@@ -7,40 +7,37 @@ import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const [sideBarOpen, setSideBarOpen] = useState(false);
-  const [searchBarInput, setSearchBarInput] = useState("")
+  const [searchBarInput, setSearchBarInput] = useState("");
 
   const handleSidebar = () => setSideBarOpen((prev) => !prev);
 
   const navigate = useNavigate();
 
   const { currentUser } = useAuth();
-    const userId = currentUser ? currentUser.uid : "";
+  const userId = currentUser ? currentUser.uid : "";
 
-  
   const handleSearchNavigation = (e) => {
-  if (e.key === 'Enter' && searchBarInput) {
-    const links = [
-      { path: `/user/${userId}`, label: "Dashboard" },
-      { path: `/user/goals/${userId}`, label: "Goals" },
-      { path: `/user/${userId}/reminders`, label: "Reminders" },
-      { path: `/user/${userId}/transactions`, label: "Transactions" },
-      { path: `/user/${userId}/settings`, label: "Settings" },
-      { path: `/user/${userId}/expenses`, label: "Expenses" },
-
-    ];
-    // checks if search query matches any pages
-    const matchingLink = links.find(link => 
+    if (e.key === "Enter" && searchBarInput) {
+      const links = [
+        { path: `/user/${userId}`, label: "Dashboard" },
+        { path: `/user/goals/${userId}`, label: "Goals" },
+        { path: `/user/${userId}/reminders`, label: "Reminders" },
+        { path: `/user/${userId}/transactions`, label: "Transactions" },
+        { path: `/user/${userId}/settings`, label: "Settings" },
+        { path: `/user/${userId}/expenses`, label: "Expenses" },
+      ];
+      // checks if search query matches any pages
+      const matchingLink = links.find((link) =>
         link.label.toLowerCase().includes(searchBarInput.toLowerCase())
       );
-    // navigates if so 
+      // navigates if so
 
       if (matchingLink) {
         navigate(matchingLink.path);
-        setSearchBarInput(''); // clears search bar
+        setSearchBarInput(""); // clears search bar
       }
     }
   };
-
 
   return (
     <nav className="flex items-center justify-between bg-white shadow px-4 py-3">
@@ -49,7 +46,9 @@ const Navbar = () => {
       </button>
 
       <div className="flex flex-1">
-        <Sidebar isOpen={sideBarOpen} onClose={() => setSideBarOpen(false)}
+        <Sidebar
+          isOpen={sideBarOpen}
+          onClose={() => setSideBarOpen(false)}
           searchQuery={searchBarInput}
         />
       </div>
@@ -65,7 +64,6 @@ const Navbar = () => {
         />
       </div>
     </nav>
-
   );
 };
 

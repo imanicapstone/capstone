@@ -101,8 +101,8 @@ const recentTransactions = () => {
     if (!newCategory.trim()) {
       return; // doesnt save empty categs
     }
-    // full transaction 
-    const transaction = transactions.find(tx => tx.id === transactionId);
+    // full transaction
+    const transaction = transactions.find((tx) => tx.id === transactionId);
 
     try {
       const token = await currentUser.getIdToken();
@@ -117,7 +117,7 @@ const recentTransactions = () => {
           categoryName: newCategory.trim(),
           amount: transaction.amount,
           date: transaction.date,
-          description: transaction.name
+          description: transaction.name,
         }),
       });
 
