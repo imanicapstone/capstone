@@ -40,7 +40,6 @@ const Register = () => {
       });
 
       if (!response.ok) {
-        console.log(response);
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to store user data");
       }
