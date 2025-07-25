@@ -47,8 +47,6 @@ exports.getMerchantConfidence = async (req, res) => {
 };
 
 exports.recommendCategory = async (req, res) => {
-  console.log("recommendCategory function called");
-  console.log("Request body:", req.body);
   const userId = req.user.uid;
   const { categoryToOverwrite } = req.body;
 

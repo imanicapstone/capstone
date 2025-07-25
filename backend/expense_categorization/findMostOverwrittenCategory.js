@@ -31,19 +31,20 @@ async function findMostOverwrittenCategory(userId, categoryToOverwrite) {
   // similar user's ID
   const similarUserId = mostSimilarUser.id;
   
-  // current user overwritten transactions
-  const userOverWritten = await prisma.transaction.findMany({
+  // parallelized db calls
+const [userOverWritten, dbOverWritten, similarOverWritten] = await Promise.all([
+  prisma.transaction.findMany({
     where: { 
       userId,
       userOverridden: true
     },
-    select: { category: true,
-        originalCategory: true,
-     },
-  });
-
-  // all users transactions where this category was overwritten
-  const dbOverWritten = await prisma.transaction.findMany({
+    select: { 
+      category: true,
+      originalCategory: true,
+    },
+  }),
+  
+  prisma.transaction.findMany({
     where: {
       originalCategory: categoryToOverwrite,
       userOverridden: true
@@ -52,11 +53,9 @@ async function findMostOverwrittenCategory(userId, categoryToOverwrite) {
       category: true,
       userId: true 
     },
-  });
+  }),
   
- 
- // similar user's transactions where this category was overwritten
-  const similarOverWritten = await prisma.transaction.findMany({
+  prisma.transaction.findMany({
     where: { 
       userId: similarUserId,
       originalCategory: categoryToOverwrite,
@@ -66,7 +65,8 @@ async function findMostOverwrittenCategory(userId, categoryToOverwrite) {
       category: true, 
       originalCategory: true
     },
-  });
+  })
+]);
 
   // occurences of each overwritten category
   const categoryCounts = {}
