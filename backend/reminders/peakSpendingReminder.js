@@ -15,7 +15,7 @@ const {
  * @async
  * @function getPeakSpendingWeek
  * @param {string} userId - The unique identifier of the user.
- */ 
+ */
 async function getPeakSpendingWeek(userId) {
   const budgets = await prisma.budget.findMany({
     where: { userId },
@@ -54,7 +54,6 @@ async function getPeakSpendingWeek(userId) {
   return parseInt(peakSpendingWeek);
 }
 
-
 /**
  * Sends a reminder to the user if the current week matches their peak spending week.
  * Does nothing if it's not the peak week or if a reminder for this month already exists.
@@ -62,7 +61,7 @@ async function getPeakSpendingWeek(userId) {
  * @async
  * @function peakWeekSpendingReminder
  * @param {string} userId - The unique identifier of the user.
- */ 
+ */
 module.exports = async function peakWeekSpendingReminder(userId) {
   const currentDate = new Date();
   const currentWeek = getWeekOfMonth(currentDate);

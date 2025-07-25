@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 const firebase = require("./middleware/auth");
 const {
   categorizeTransaction,
-  getOrCreateCategory
+  getOrCreateCategory,
 } = require("./expense_categorization/merchantCategories");
 
 exports.createLinktoken = async (req, res) => {
@@ -147,7 +147,7 @@ exports.getTransactions = async (req, res) => {
           date: tx.date,
           merchant: merchantName,
           category: category.name,
-          confidenceScore: confidenceScore
+          confidenceScore: confidenceScore,
         });
       } else {
         // use existing transaction with category including now
@@ -159,7 +159,7 @@ exports.getTransactions = async (req, res) => {
           date: tx.date,
           merchant: merchantName,
           category: category.name,
-          confidenceScore: confidenceScore
+          confidenceScore: confidenceScore,
         });
       }
     }
@@ -179,7 +179,7 @@ exports.overrideTransactionCategory = async (req, res) => {
     // check if the category exists or create it
     const category = await getOrCreateCategory(categoryName, userId);
 
-     // first try to find the transaction by id
+    // first try to find the transaction by id
     let transaction = await prisma.transaction.findFirst({
       where: {
         id: transactionId,
@@ -188,7 +188,12 @@ exports.overrideTransactionCategory = async (req, res) => {
     });
 
     // if transaction not found try to find it by other attributes
-    if (!transaction && req.body.amount && req.body.date && req.body.description) {
+    if (
+      !transaction &&
+      req.body.amount &&
+      req.body.date &&
+      req.body.description
+    ) {
       transaction = await prisma.transaction.findFirst({
         where: {
           userId: userId,
@@ -203,7 +208,6 @@ exports.overrideTransactionCategory = async (req, res) => {
       return res.status(404).json({ error: "Transaction not found" });
     }
 
-
     // update transaction with new category
     const updatedTransaction = await prisma.transaction.update({
       where: {
@@ -211,7 +215,9 @@ exports.overrideTransactionCategory = async (req, res) => {
       },
       data: {
         // save original category if this is the first override
-        originalCategory: transaction.userOverridden ? transaction.originalCategory : transaction.category,
+        originalCategory: transaction.userOverridden
+          ? transaction.originalCategory
+          : transaction.category,
         category: categoryName,
         userOverridden: true, // indicates override was manually set
       },

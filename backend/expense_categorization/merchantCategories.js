@@ -6,7 +6,7 @@ const { confidenceCalculation } = require("./confidenceScore");
 /**
  * Categorizes a transaction merchant by checking if the merchant already has a saved category,
  * or otherwise fetching category data from Yelp and storing it.
- * 
+ *
  * 1. Checks for an existing merchant category record in the database.
  * 2. If found, updates the `lastUsed` timestamp and returns the saved category and confidence score.
  * 3. If not found, fetches category info from Yelp and calculates a confidence score.
@@ -17,7 +17,7 @@ const { confidenceCalculation } = require("./confidenceScore");
  * @function categorizeTransaction
  * @param {string} merchantName - The name of the merchant to categorize.
  * @param {string} userId - The ID of the user for who the category is being determined or created.
- */ 
+ */
 async function categorizeTransaction(merchantName, userId) {
   // check if this merchant is already categorized
   const existingMerchant = await prisma.YelpCategory.findFirst({

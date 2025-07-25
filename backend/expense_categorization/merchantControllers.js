@@ -19,7 +19,7 @@ const {
  * @param {Object} req.user - The authenticated user object attached to the request.
  * @param {string} req.user.uid - The unique identifier of the current user.
  * @param {Object} res - The Express response object.
- */ 
+ */
 exports.getMerchantConfidence = async (req, res) => {
   const { merchantName } = req.params;
   const userId = req.user.uid;

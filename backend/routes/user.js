@@ -4,8 +4,10 @@ const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const authenticate = require("../middleware/auth");
 const plaidClient = require("../plaidClient");
-// for recommended categories 
-const { recommendCategory } = require("../expense_categorization/merchantControllers");
+// for recommended categories
+const {
+  recommendCategory,
+} = require("../expense_categorization/merchantControllers");
 
 // create a user
 user.post("/", authenticate, async (req, res) => {
@@ -498,8 +500,7 @@ user.delete("/avoided-merchant/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: "Failed to remove avoided merchant" });
   }
 });
-// added for the ability to recommend categs to user 
+// added for the ability to recommend categs to user
 user.post("/recommend-category", authenticate, recommendCategory);
-
 
 module.exports = user;

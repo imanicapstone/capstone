@@ -6,7 +6,7 @@ const stringSimilarity = require("string-similarity");
 
 /**
  * Categorizes a merchant by analyzing its synonyms and matching them against known categories.
- * 
+ *
  * 1. Attempts to find direct synonym matches in the database with associated confidence scores.
  * 2. If no direct match is found, falls back to string similarity between synonyms and the user's custom categories.
  *
@@ -14,7 +14,7 @@ const stringSimilarity = require("string-similarity");
  * @function categorizeBySynonym
  * @param {string} merchantName - The name of the merchant to categorize.
  * @param {string} userId - The ID of the user whose categories are used for comparison.
- */ 
+ */
 async function categorizeBySynonym(merchantName, userId) {
   const merchantSynonyms = await synonymMatch(merchantName);
 

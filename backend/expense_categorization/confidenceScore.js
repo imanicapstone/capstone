@@ -8,7 +8,7 @@
  * @param {Object} yelpData - Yelp business data object.
  * @param {string} yelpData.name - The Yelp business name.
  * @param {string[]} [yelpData.yelp_categories] - Array of Yelp category names.
- */ 
+ */
 const stringSimilarity = require("string-similarity");
 
 function calculateConfidenceScore(merchantName, yelpData) {

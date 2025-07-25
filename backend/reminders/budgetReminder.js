@@ -11,7 +11,6 @@ const {
   createReminder,
 } = require("./reminderUtils");
 
-
 /**
  * Sends a budget reminder to the user if their spending exceeds their monthly budget.
  *
@@ -23,7 +22,7 @@ const {
  * @async
  * @function budgetReminder
  * @param {string} userId - The unique identifier of the user to check and notify.
- */ 
+ */
 module.exports = async function budgetReminder(userId) {
   const currentMonth = new Date();
 
