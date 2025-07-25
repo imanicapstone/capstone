@@ -80,6 +80,64 @@ exports.getConnectionStatus = async (req, res) => {
   }
 };
 
+async function calculateMerchantConfidenceAndRecommendations(merchantNames, firebaseUid) {
+// process all merchants in one batch
+    const confidenceScores = {};
+    const recommendedCategories = {};
+
+    // using promise all for parallel promising
+    await Promise.all(
+      merchantNames.map(async (merchantName) => {
+        // get confidence score
+        const result = await categorizeTransaction(merchantName, firebaseUid);
+        confidenceScores[merchantName] = result.confidenceScore;
+
+        // for low confidence merchants, get recommendations
+        if (result.confidenceScore < 80) {
+          try {
+            // direct function call instead of api request
+            const directReq = {
+              user: { uid: firebaseUid },
+              body: {
+                categoryToOverwrite: result.category.name || "Uncategorized",
+              },
+            };
+
+            let recommendedCategory = null;
+            const directRes = {
+              json: (data) => {
+                recommendedCategory = data.recommendedCategory;
+              },
+              status: () => ({
+                json: () => {}, // mock for error handling
+              }),
+            };
+
+            await recommendCategory(directReq, directRes);
+
+            if (recommendedCategory) {
+              recommendedCategories[merchantName] = recommendedCategory;
+            } else {
+              // applying fallbacks manually if needed
+              const fallbacks = {
+                "Food and Drink": "Groceries",
+                Bars: "Entertainment",
+                Shopping: "Personal",
+                Payment: "Bills & Utilities",
+                Transfer: "Financial",
+              };
+              recommendedCategories[merchantName] =
+                fallbacks[result.category.name] || "Miscellaneous";
+            }
+          } catch (err) {
+            console.error("Error getting recommended category:", err);
+          }
+        }
+      })
+    );
+    return { confidenceScores, recommendedCategories };
+  }
+
 exports.getTransactions = async (req, res) => {
   const firebaseUid = req.user.uid;
   try {
@@ -176,60 +234,9 @@ exports.getTransactions = async (req, res) => {
     // get unique merchants
     const merchantNames = [...new Set(transactions.map((tx) => tx.merchant))];
 
-    // process all merchants in one batch
-    const confidenceScores = {};
-    const recommendedCategories = {};
-
-    // using promise all for parallel promising
-    await Promise.all(
-      merchantNames.map(async (merchantName) => {
-        // get confidence score
-        const result = await categorizeTransaction(merchantName, firebaseUid);
-        confidenceScores[merchantName] = result.confidenceScore;
-
-        // for low confidence merchants, get recommendations
-        if (result.confidenceScore < 80) {
-          try {
-            // direct function call instead of api request
-            const mockReq = {
-              user: { uid: firebaseUid },
-              body: {
-                categoryToOverwrite: result.category.name || "Uncategorized",
-              },
-            };
-
-            let recommendedCategory = null;
-            const mockRes = {
-              json: (data) => {
-                recommendedCategory = data.recommendedCategory;
-              },
-              status: () => ({
-                json: () => {}, // mock for error handling
-              }),
-            };
-
-            await recommendCategory(mockReq, mockRes);
-
-            if (recommendedCategory) {
-              recommendedCategories[merchantName] = recommendedCategory;
-            } else {
-              // applying fallbacks manually if needed
-              const fallbacks = {
-                "Food and Drink": "Groceries",
-                Bars: "Entertainment",
-                Shopping: "Personal",
-                Payment: "Bills & Utilities",
-                Transfer: "Financial",
-              };
-              recommendedCategories[merchantName] =
-                fallbacks[result.category.name] || "Miscellaneous";
-            }
-          } catch (err) {
-            console.error("Error getting recommended category:", err);
-          }
-        }
-      })
-    );
+    // Calculate confidence scores and recommendations
+const { confidenceScores, recommendedCategories } = 
+  await calculateMerchantConfidenceAndRecommendations(merchantNames, firebaseUid);
 
     // added confidence scores and recommendation logic
     const enhancedTransactions = transactions.map((tx) => {
