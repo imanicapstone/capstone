@@ -26,3 +26,26 @@ Technology Stack:
 *   **Prisma ORM**: Database operations
 *   **Firebase Authentication**: User authentication and security
 *   **Plaid API**: Banking data integration
+
+Features:
+*   **Secure Bank Integration**: Connect bank accounts securely using Plaid API
+*   **Intelligent Transaction Categorization**: Automatically categorize transactions with machine learning
+*   **Budget Management**: Set monthly budgets and track spending
+*   **Financial Goals**: Create and monitor progress towards financial goals
+*   **Smart Reminders**: Receive notifications about unusual spending patterns, budget limits, and financial goals
+*   **Expense Analysis**: Visualize spending patterns with interactive charts
+*   **Merchant Avoidance**: Mark specific merchants to avoid for better spending habits
+
+Technology Stack: 
+
+- Frontend 
+*   **React.js**: Core UI framework
+*   **Tailwind CSS**: Styling and UI components
+*   **React Router**: Navigation and routing
+*   **Context API**: State management
+
+- Backend
+*   **Node.js & Express**: Server framework
+*   **Prisma ORM**: Database operations
+*   **Firebase Authentication**: User authentication and security
+*   **Plaid API**: Banking data integration
