@@ -200,6 +200,8 @@ exports.getTransactions = async (req, res) => {
         const result = await categorizeTransaction(merchantName, firebaseUid);
         const category = result.category;
         const confidenceScore = result.confidenceScore;
+        tx.category = category.name
+
 
         // transaction exists in database
         const existingTransaction = await prisma.transaction.findFirst({
