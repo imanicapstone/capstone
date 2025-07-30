@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 
 import BankStatus from "../components/BankStatus";
+import Chatbot from "../components/Chatbot";
 import Navbar from "../components/Navbar";
 import CircularLoader from "../components/CircularLoader";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -152,6 +153,8 @@ const Dashboard = () => {
               <CardAction></CardAction>
             </CardHeader>
           </Card>
+
+          <Chatbot />
         </div>
 
         <div style={{ marginLeft: "40px" }}>

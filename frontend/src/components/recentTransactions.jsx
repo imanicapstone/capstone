@@ -27,13 +27,16 @@ const recentTransactions = () => {
         setError(null);
 
         const token = await currentUser.getIdToken();
-        const response = await fetch(`${API_BASE_URL}/plaid/transactions?cached=true`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${API_BASE_URL}/plaid/transactions?cached=true`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -43,20 +46,19 @@ const recentTransactions = () => {
         setTransactions(data);
 
         const scores = {};
-      const recommendations = {};
-      
-      data.forEach((tx) => {
-        if (tx.merchant) {
-          scores[tx.merchant] = tx.confidenceScore;
-          if (tx.recommendedCategory) {
-            recommendations[tx.id] = tx.recommendedCategory;
-          }
-        }
-      });
-      
-      setMerchantConfidenceScores(scores);
-      setRecommendedCategories(recommendations);
+        const recommendations = {};
 
+        data.forEach((tx) => {
+          if (tx.merchant) {
+            scores[tx.merchant] = tx.confidenceScore;
+            if (tx.recommendedCategory) {
+              recommendations[tx.id] = tx.recommendedCategory;
+            }
+          }
+        });
+
+        setMerchantConfidenceScores(scores);
+        setRecommendedCategories(recommendations);
       } catch (err) {
         console.error("Error fetching transactions:", err);
         setError("Failed to fetch transactions. Please try again.");
