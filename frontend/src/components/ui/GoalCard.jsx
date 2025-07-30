@@ -7,7 +7,7 @@ const GoalCard = ({ goal }) => {
   );
 
   return (
-    <Card className="mb-4 border-2 ">
+    <Card className="mb-4 border-2 ml-10">
       <CardHeader>
         <CardTitle style={{ color: "#6e6295" }}>{goal.title}</CardTitle>
         {goal.description && (

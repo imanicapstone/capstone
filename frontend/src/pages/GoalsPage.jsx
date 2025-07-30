@@ -104,12 +104,12 @@ const GoalsPage = () => {
             )}
           </div>
 
-          <GoalForm userId={currentUser.uid} onGoalCreated={handleNewGoal} />
-          <div className="goals-container">
+          <div className="goals-container mb-8">
             {goals.map((goal) => (
               <GoalCard key={goal.id} goal={goal} />
             ))}
           </div>
+          <GoalForm userId={currentUser.uid} onGoalCreated={handleNewGoal} />
         </div>
       </div>
     </div>
