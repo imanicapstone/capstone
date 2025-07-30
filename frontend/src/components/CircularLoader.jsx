@@ -13,7 +13,7 @@ const CircularLoader = ({
   useEffect(() => {
     const timeout = setTimeout(() => {
       setProgress(percentageSpent);
-    }, 10); // delay
+    }, 0); // delay
 
     return () => clearTimeout(timeout);
   }, [percentageSpent]);
@@ -42,7 +42,7 @@ const CircularLoader = ({
         strokeDashoffset={offset}
         strokeLinecap="round"
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        style={{ transition: "stroke-dashoffset 2s ease" }}
+        style={{ transition: "stroke-dashoffset 1s ease" }}
       />
 
       <text
